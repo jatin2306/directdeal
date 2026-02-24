@@ -27,10 +27,10 @@ class UserListingController extends Controller
             'emirates_id'  => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
 
             'property_status' => 'required|in:rented,vacant,vacant_on_transfer,off_plan',
-            'rent_frequency' => 'nullable|required_if:listing_type,rent',
+            // 'rent_frequency' => 'nullable|required_if:listing_type,rent',
 
-            'custom_start_date' => 'nullable|required_if:rent_frequency,custom|date',
-            'custom_end_date'   => 'nullable|required_if:rent_frequency,custom|date|after:custom_start_date',
+            // 'custom_start_date' => 'nullable|required_if:rent_frequency,custom|date',
+            // 'custom_end_date'   => 'nullable|required_if:rent_frequency,custom|date|after:custom_start_date',
 
             'price' => 'required|integer',
 
@@ -40,14 +40,14 @@ class UserListingController extends Controller
         // ===============================
         // 1.1 HANDLE CUSTOM RENT STRING
         // ===============================
-        if (
-            $validated['rent_frequency'] === 'custom'
-            && $request->custom_start_date
-            && $request->custom_end_date
-        ) {
-            $validated['rent_frequency'] =
-                $request->custom_start_date . ' to ' . $request->custom_end_date;
-        }
+        // if (
+        //     $validated['rent_frequency'] === 'custom'
+        //     && $request->custom_start_date
+        //     && $request->custom_end_date
+        // ) {
+        //     $validated['rent_frequency'] =
+        //         $request->custom_start_date . ' to ' . $request->custom_end_date;
+        // }
 
         // ===============================
         // 2. FILE UPLOADS (DOCS)
