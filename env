@@ -1,0 +1,75 @@
+# -------------------------------------------------
+# ✅ APP CONFIGURATION
+# -------------------------------------------------
+APP_NAME=DirectDeal
+APP_ENV=production
+APP_KEY=base64:z6ovW3JEcZ96PeK0XnqtuCcGm4AfrSSCJDvcbKSqh6w=
+APP_DEBUG=true
+APP_TIMEZONE=Asia/Dubai
+APP_URL=https://directdealuae.com
+
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+
+APP_MAINTENANCE_DRIVER=file
+PHP_CLI_SERVER_WORKERS=4
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_LEVEL=error
+
+# -------------------------------------------------
+# ✅ DATABASE (use your actual credentials)
+# -------------------------------------------------
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=property
+DB_USERNAME=property
+DB_PASSWORD=Bench@5060
+
+# -------------------------------------------------
+# ✅ SESSION / CACHE / QUEUE
+# -------------------------------------------------
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+CACHE_STORE=database
+CACHE_PREFIX=
+QUEUE_CONNECTION=database
+# FILESYSTEM_DISK=local
+FILESYSTEM_DISK=custom_public
+PUBLIC_STORAGE_PATH=/home/ny0fzhinypd5/public_html/storage
+
+
+
+# -------------------------------------------------
+# ✅ MAIL CONFIG (optional for GoDaddy email)
+# -------------------------------------------------
+
+MAIL_MAILER=smtp
+MAIL_HOST=directdealuae.com
+MAIL_PORT=465
+MAIL_USERNAME=info@directdealuae.com
+MAIL_PASSWORD=Bench@5060
+MAIL_ENCRYPTION=ssl
+MAIL_FROM_ADDRESS=info@directdealuae.com
+MAIL_FROM_NAME="DirectDeal UAE"
+
+# -------------------------------------------------
+# ✅ REDIS (optional)
+# -------------------------------------------------
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# -------------------------------------------------
+# ✅ FRONTEND
+# -------------------------------------------------
+VITE_APP_NAME="${APP_NAME}"
