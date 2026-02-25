@@ -41,7 +41,7 @@
 
 
                             <div class="ms-auto my-4 mt-sm-0">
-                                <a class="btn btn-primary btn-md" href="{{ route('submit.property') }}"> <i
+                                <a class="btn btn-primary btn-md" href="{{ route('add.listing') }}"> <i
                                         class="fa fa-plus-circle"></i>Add Property </a>
                             </div>
 
