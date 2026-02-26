@@ -88,23 +88,27 @@ public function duplicate($id)
 
     public function index(Request $request)
     {
+        $search = trim((string) $request->get('search', ''));
         $priceMin = $request->get('priceMin');
         $priceMax = $request->get('priceMax');
         $propertyType = $request->get('propertyType');
         $category = $request->get('property_category_id');
         $childType = $request->get('child_type_id');
         $status = $request->get('status');
+        $verified = $request->get('verified');
         $sortOption = $request->get('sort');
         $bedrooms = $request->get('bedrooms');
         $bathrooms = $request->get('bathrooms');
         $location = $request->get('location');
 
         $properties = Property::with(['user', 'category', 'childTypeRelation'])
+            ->adminSearch($search)
             ->filterByPropertyType($propertyType)
             ->filterByCategory($category)
             ->filterByChildType($childType)
             ->filterByPrice($priceMin, $priceMax)
             ->filterByStatus($status)
+            ->filterByVerified($verified)
             ->filterByBedrooms($bedrooms)
             ->filterByBathrooms($bathrooms)
             ->filterByLocation($location);
@@ -148,9 +152,16 @@ public function duplicate($id)
 
         $locations = Property::pluck('city')->merge(Property::pluck('sub_area'))->unique()->values();
 
+        if ($request->ajax() || $request->wantsJson()) {
+            $html = view('admin.partials.property-list-content', compact(
+                'properties', 'propertyTypes', 'categories', 'childTypes', 'locations'
+            ))->render();
+            return response()->json(['html' => $html, 'total' => $totalProperty]);
+        }
+
         return view('admin.property-list', compact(
             'properties', 'totalProperty', 'propertyTypes', 'statuses',
-            'categories', 'childTypes', 'locations'
+            'categories', 'childTypes', 'locations', 'search'
         ));
     }
 

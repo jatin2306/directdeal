@@ -48,6 +48,37 @@ Route::get('/contact', function () {
     return view('contact');
 });
 
+Route::get('/sitemap.xml', function () {
+    $base = rtrim(config('app.url'), '/');
+    $urls = [
+        ['loc' => $base . '/', 'priority' => '1.0', 'changefreq' => 'daily'],
+        ['loc' => $base . '/properties', 'priority' => '0.9', 'changefreq' => 'daily'],
+        ['loc' => $base . '/about', 'priority' => '0.8', 'changefreq' => 'monthly'],
+        ['loc' => $base . '/services', 'priority' => '0.8', 'changefreq' => 'monthly'],
+        ['loc' => $base . '/contact', 'priority' => '0.7', 'changefreq' => 'monthly'],
+        ['loc' => $base . '/advertising', 'priority' => '0.6', 'changefreq' => 'monthly'],
+    ];
+    foreach (Property::verified()->select('id', 'updated_at')->cursor() as $p) {
+        $urls[] = [
+            'loc' => $base . '/properties/' . $p->id,
+            'priority' => '0.8',
+            'changefreq' => 'weekly',
+            'lastmod' => $p->updated_at?->toW3cString(),
+        ];
+    }
+    $xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+    foreach ($urls as $u) {
+        $xml .= '<url><loc>' . htmlspecialchars($u['loc']) . '</loc>';
+        if (!empty($u['lastmod'])) {
+            $xml .= '<lastmod>' . $u['lastmod'] . '</lastmod>';
+        }
+        $xml .= '<changefreq>' . ($u['changefreq'] ?? 'monthly') . '</changefreq>';
+        $xml .= '<priority>' . ($u['priority'] ?? '0.5') . '</priority></url>';
+    }
+    $xml .= '</urlset>';
+    return response($xml, 200, ['Content-Type' => 'application/xml', 'Cache-Control' => 'public, max-age=3600']);
+})->name('sitemap');
+
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });

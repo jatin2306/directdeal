@@ -1,5 +1,8 @@
 @extends('layouts.home')
 
+@section('title', 'About Direct Deal UAE – RERA-Licensed Real Estate | Lowest Brokerage Dubai')
+@section('meta_description', 'About Direct Deal UAE: RERA-licensed brokerage in Dubai. Lowest brokerage fees, verified listings, 0% commission for sellers. Transparent property transactions.')
+
 @section('content')
 
 <!--=================================
@@ -10,7 +13,7 @@ breadcrumb -->
       <div class="col-12">
         <ol class="breadcrumb mb-0">
           <li class="breadcrumb-item">
-            <a href="{{ url('/') }}"> <i class="fas fa-home"></i> </a>
+            <a href="{{ route('home') }}"> <i class="fas fa-home"></i> </a>
           </li>
           <li class="breadcrumb-item">
             <i class="fas fa-chevron-right"></i> <span>About Us</span>

@@ -1,12 +1,30 @@
 @extends('layouts.home')
+
+@section('title', $property->propertyName . ' | Direct Deal UAE')
+@section('meta_description', Str::limit(strip_tags($property->description), 155))
+@section('meta_keywords', $property->propertyName . ', ' . ($property->address ?? '') . ', property Dubai, ' . ($property->city ?? ''))
+
 @push('meta')
 <meta property="og:title" content="{{ $property->propertyName }}" />
 <meta property="og:description" content="{{ Str::limit($property->description, 150) }}" />
 <meta property="og:image" content="{{ asset($property->pictures->isNotEmpty() ? 'storage/' . $property->pictures->first()->path : 'images/default-property.jpg') }}" />
-
 <meta property="og:url" content="{{ url('/properties/' . $property->id) }}" />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="en_US" />
+@endpush
+
+@push('schema')
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": {!! json_encode($property->propertyName) !!},
+    "description": {!! json_encode(Str::limit(strip_tags($property->description ?? ''), 200)) !!},
+    "url": {!! json_encode(url('/properties/' . $property->id)) !!},
+    "address": { "@type": "PostalAddress", "addressLocality": {!! json_encode($property->city ?? 'Dubai') !!}, "streetAddress": {!! json_encode($property->address ?? '') !!} },
+    "offers": { "@type": "Offer", "price": "{{ $property->price }}", "priceCurrency": "AED" }
+}
+</script>
 @endpush
 
 @section('content')
@@ -78,7 +96,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <div class="property-detail-title">
-                            <h3>{{ $property->propertyName }}</h3>
+                            <h1 class="h3 mb-0">{{ $property->propertyName }}</h1>
                             <span class="d-block mb-4"><i
                                     class="fas fa-map-marker-alt fa-xs pe-2"></i>{{ $property->address }}</span>
                         </div>
@@ -220,7 +238,7 @@
                                       @if ($property->pictures->isNotEmpty())
                                           <div class="featured-image">
                                               <a href="{{ asset('storage/' . $property->pictures->first()->path) }}" data-lg-size="1024-768">
-                                                  <img class="img-fluid" src="{{ asset('storage/' . $property->pictures->first()->path) }}" alt="Property Picture" />
+                                                  <img class="img-fluid" src="{{ asset('storage/' . $property->pictures->first()->path) }}" alt="{{ $property->propertyName }} – main photo" />
                                               </a>
                                               <div class="image-count-bottom-right">
                                                   {{ $property->pictures->count() }} Photos
@@ -229,19 +247,19 @@
                                           <div class="side-images">
                                               @foreach ($property->pictures->slice(1, 2) as $picture)
                                                   <a href="{{ asset('storage/' . $picture->path) }}" data-lg-size="1024-768">
-                                                      <img class="img-fluid" src="{{ asset('storage/' . $picture->path) }}" alt="Property Picture" />
+                                                      <img class="img-fluid" src="{{ asset('storage/' . $picture->path) }}" alt="{{ $property->propertyName }} – photo" />
                                                   </a>
                                               @endforeach
                                           </div>
                                           <div class="hidden-images">
                                               @foreach ($property->pictures->slice(3) as $picture)
                                                   <a href="{{ asset('storage/' . $picture->path) }}" data-lg-size="1024-768">
-                                                      <img class="img-fluid" src="{{ asset('storage/' . $picture->path) }}" alt="Property Picture" />
+                                                      <img class="img-fluid" src="{{ asset('storage/' . $picture->path) }}" alt="{{ $property->propertyName }} – photo" />
                                                   </a>
                                               @endforeach
                                           </div>
                                       @else
-                                      <img src="{{ asset('images/default-property.jpg') }}" alt="Default Property Image" class="img-fluid">
+                                      <img src="{{ asset('images/default-property.jpg') }}" alt="{{ $property->propertyName }}" class="img-fluid">
 
                                       @endif
                                   </div>
@@ -380,7 +398,7 @@
                                 </div>
                             <div class="col-sm-6 text-center">
                             @if($property->regulatory_image)
-                                <img src="{{ asset('storage/' . $property->regulatory_image) }}" class="img-fluid" style="max-width: 30%;" alt="Regulatory Document">
+                                <img src="{{ asset('storage/' . $property->regulatory_image) }}" class="img-fluid" style="max-width: 30%;" alt="Regulatory document – {{ $property->propertyName }}">
                                 <p>DLD Permit Number</p>
                             @else
                                 <p>Image Not Available</p>
@@ -436,7 +454,7 @@
                                   <h6>Recently Listed Properties</h6>
                                   @foreach ($similarProperties as $similar)
                                       <div class="recent-list-item mb-3">
-                                          <img src="{{ $similar->pictures->isNotEmpty() ? asset('storage/' . $similar->pictures->first()->path) : asset('images/placeholder.jpg') }}" alt="{{ $similar->name }}" class="img-fluid">
+                                          <img src="{{ $similar->pictures->isNotEmpty() ? asset('storage/' . $similar->pictures->first()->path) : asset('images/placeholder.jpg') }}" alt="{{ $similar->propertyName }}" class="img-fluid">
                                           <div class="mt-2">
                                               <a class="address mb-2" href="{{ route('property.show', $similar->id) }}">{{ $similar->propertyName }}</a>
                                               <span class="text-primary">${{ $similar->price }}</span>

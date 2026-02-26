@@ -13,13 +13,16 @@
 </script>
 
     <meta charset="utf-8">
-    <meta name="keywords" content="Direct Deal - Real Estate" />
-    <meta name="description" content="Direct Deal - Real Estate" />
-    <meta name="author" content="signinfotech.com.com" />
+    <meta name="keywords" content="{{ e($__env->yieldContent('meta_keywords') ?: 'Direct Deal UAE, buy property Dubai, rent property Dubai, verified listings, RERA licensed, lowest brokerage Dubai') }}" />
+    <meta name="description" content="{{ e($__env->yieldContent('meta_description') ?: 'Direct Deal UAE – Buy, sell and rent verified properties in Dubai. Lowest brokerage fees, RERA-licensed, 100% verified listings.') }}" />
+    <meta name="author" content="Direct Deal UAE" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    @hasSection('canonical')
+    <link rel="canonical" href="@yield('canonical')" />
+    @endif
     <!-- Dynamic meta tags for social media sharing-->
     @stack('meta')
-    <title>{{ config('app.name', 'Direct Deal') }}</title>
+    <title>@yield('title', 'Direct Deal UAE – Buy, Sell & Rent Properties in Dubai')</title>
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" />
@@ -74,6 +77,29 @@
         })(window, document, "clarity", "script", "vbh7f3r1ez");
     </script>
 
+    <!-- JSON-LD Schema: WebSite + Organization (default; pages may push more) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "name": "Direct Deal UAE",
+                "url": "{{ url('/') }}",
+                "description": "Buy, sell and rent verified properties in Dubai. Lowest brokerage fees, RERA-licensed.",
+                "potentialAction": { "@type": "SearchAction", "target": "{{ url('/properties') }}?location={search_term_string}", "query-input": "required name=search_term_string" }
+            },
+            {
+                "@type": "Organization",
+                "name": "Direct Deal UAE",
+                "url": "{{ url('/') }}",
+                "description": "RERA-licensed real estate brokerage in Dubai. Verified listings, lowest brokerage fees."
+            }
+        ]
+    }
+    </script>
+    @stack('schema')
+
 </head>
 
 <body>
@@ -107,7 +133,7 @@
         <div class="container-fluid px-4">
             <!-- Logo and Brand -->
             <a class="navbar-brand me-5" href="{{ url('') }}" style="min-width: 150px;">
-                <img class="img-fluid" src="{{ asset('images/logo.jpg') }}" alt="logo" style="height: 40px;">
+                <img class="img-fluid" src="{{ asset('images/logo.jpg') }}" alt="Direct Deal UAE – Buy, Sell & Rent Properties in Dubai" style="height: 40px;">
             </a>
 
             <!-- Mobile Toggle Button -->

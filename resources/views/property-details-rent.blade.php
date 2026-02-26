@@ -1,12 +1,30 @@
 @extends('layouts.home')
+
+@section('title', $property->propertyName . ' | Direct Deal UAE')
+@section('meta_description', Str::limit(strip_tags($property->description ?? ''), 155))
+@section('meta_keywords', $property->propertyName . ', ' . ($property->address ?? '') . ', rent Dubai, property Dubai, ' . ($property->city ?? ''))
+
 @push('meta')
 <meta property="og:title" content="{{ $property->propertyName }}" />
 <meta property="og:description" content="{{ Str::limit($property->description, 150) }}" />
 <meta property="og:image" content="{{ asset($property->pictures->isNotEmpty() ? 'storage/' . $property->pictures->first()->path : 'images/default-property.jpg') }}" />
-
 <meta property="og:url" content="{{ url('/properties/' . $property->id) }}" />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="en_US" />
+@endpush
+
+@push('schema')
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": {!! json_encode($property->propertyName) !!},
+    "description": {!! json_encode(Str::limit(strip_tags($property->description ?? ''), 200)) !!},
+    "url": {!! json_encode(url('/properties/' . $property->id)) !!},
+    "address": { "@type": "PostalAddress", "addressLocality": {!! json_encode($property->city ?? 'Dubai') !!}, "streetAddress": {!! json_encode($property->address ?? '') !!} },
+    "offers": { "@type": "Offer", "price": "{{ $property->price }}", "priceCurrency": "AED" }
+}
+</script>
 @endpush
 
 @section('content')
@@ -78,7 +96,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <div class="property-detail-title">
-                            <h3>{{ $property->propertyName }}</h3>
+                            <h1 class="h3 mb-0">{{ $property->propertyName }}</h1>
                             <span class="d-block mb-4"><i
                                     class="fas fa-map-marker-alt fa-xs pe-2"></i>{{ $property->address }}</span>
                         </div>

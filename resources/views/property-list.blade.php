@@ -1,5 +1,8 @@
 @extends('layouts.home')
 
+@section('title', 'Verified Properties for Sale & Rent in Dubai | Direct Deal UAE')
+@section('meta_description', 'Search verified properties for sale and rent in Dubai. Apartments, villas, townhouses. Lowest brokerage, RERA-licensed. Filter by price, location, bedrooms.')
+
 @section('content')
 
     <!-- Dynamic breadcrumb -->
@@ -98,7 +101,8 @@
     </style>
     <section class="space-ptb" style="padding: 40px 0;">
         <div class="container">
-            
+            <h1 class="h2 mb-1">Verified Properties for Sale & Rent in Dubai</h1>
+            <p class="text-muted mb-4">Browse 100% verified listings. Lowest brokerage fees.</p>
             <style>
             /* Highlight only when a selection is made */
             .select2-container--default .select2-selection--single.filled {
@@ -468,7 +472,7 @@
                                                 <div class="property-image bg-overlay-gradient-04">
                                                     <img class="img-fluid"
                                                         src="{{ $property->pictures->first() ? asset('storage/' . $property->pictures->first()->path) : asset('images/placeholder.jpg') }}"
-                                                        class="card-img-top" alt="Property Image">
+                                                        class="card-img-top" alt="{{ $property->propertyName }}">
 
                                                     <div class="property-lable">
                                                         <span
@@ -577,7 +581,7 @@
 
                                             <img class="img-fluid"
                                                 src="{{ $property->pictures->first() ? asset('storage/' . $property->pictures->first()->path) : asset('images/placeholder.jpg') }}"
-                                                class="card-img-top" alt="Property Image">
+                                                class="card-img-top" alt="{{ $property->propertyName }}">
 
                                             <div class="property-lable">
                                                 <span

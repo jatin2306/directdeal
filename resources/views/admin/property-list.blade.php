@@ -6,14 +6,96 @@
 
 <!-- Header -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-  <h4 class="mb-0">All Properties ({{ $totalProperty }})</h4>
-  
+  <h4 class="mb-0">All Properties (<span id="admin-property-count">{{ $totalProperty }}</span>)</h4>
 </div>
+
+<!-- Search bar – above the list (search-as-you-type, no button) -->
+<div class="card shadow-sm border-0 mb-3">
+  <div class="card-body py-3">
+    <form id="admin-search-form" method="GET" action="{{ request()->url() }}" class="row g-2 align-items-end">
+      @foreach(request()->except('search', 'page') as $key => $val)
+        @if(is_array($val))
+          @foreach($val as $v)
+            <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+          @endforeach
+        @elseif($val !== null && $val !== '')
+          <input type="hidden" name="{{ $key }}" value="{{ $val }}">
+        @endif
+      @endforeach
+      <div class="col flex-grow-1">
+        <label class="form-label small mb-1">Search all fields</label>
+        <input type="text" id="admin-search-input" name="search" class="form-control form-control-lg" placeholder="Type to search (e.g. Marwa, JVC, townhouse)..." value="{{ request('search', $search ?? '') }}" autocomplete="off">
+      </div>
+      <div class="col-auto">
+        <a href="{{ request()->url() }}?{{ http_build_query(request()->except('search', 'page')) }}" class="btn btn-outline-secondary btn-lg" id="admin-clear-search" style="{{ request('search', $search ?? '') ? '' : 'display:none;' }}">
+          <i class="fa fa-times me-1"></i> Clear search
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+@push('scripts')
+<script>
+(function() {
+  var form = document.getElementById('admin-search-form');
+  var input = document.getElementById('admin-search-input');
+  var clearBtn = document.getElementById('admin-clear-search');
+  var target = document.getElementById('admin-property-list-ajax-target');
+  var countEl = document.getElementById('admin-property-count');
+  var timer = null;
+  var debounceMs = 400;
+
+  if (!form || !input || !target) return;
+
+  function buildUrl() {
+    var url = form.action || window.location.pathname;
+    var params = new URLSearchParams();
+    params.set('search', input.value.trim());
+    var hiddens = form.querySelectorAll('input[type="hidden"]');
+    for (var i = 0; i < hiddens.length; i++) {
+      if (hiddens[i].name && hiddens[i].name !== 'search') params.set(hiddens[i].name, hiddens[i].value);
+    }
+    var qs = params.toString();
+    return qs ? url + (url.indexOf('?') >= 0 ? '&' : '?') + qs : url;
+  }
+
+  function doSearch() {
+    var url = buildUrl();
+    fetch(url, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.html !== undefined) target.innerHTML = data.html;
+        if (countEl && data.total !== undefined) countEl.textContent = data.total;
+        if (window.history && window.history.replaceState) history.replaceState(null, '', url);
+      })
+      .catch(function() { window.location.href = url; });
+  }
+
+  input.addEventListener('input', function() {
+    clearBtn.style.display = input.value.trim() ? '' : 'none';
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(doSearch, debounceMs);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (timer) clearTimeout(timer);
+      doSearch();
+    }
+  });
+})();
+</script>
+@endpush
 
 <!-- Filter Bar -->
 <div class="card shadow-sm border-0 mb-4">
   <div class="card-body">
     <form method="GET" class="row g-3 align-items-end">
+      <input type="hidden" name="search" value="{{ request('search', $search ?? '') }}">
       <div class="col-md-2">
         <label class="form-label">Property Type</label>
         <select name="propertyType" class="form-select">
@@ -76,127 +158,12 @@
   </div>
 </div>
 
-<!-- Property Table -->
-<div class="card shadow-sm border-0">
-  <div class="card-body table-responsive">
-  @if (session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
+@if (session('success'))
+  <div class="alert alert-success mb-4">{{ session('success') }}</div>
 @endif
 
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Property</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Price</th>
-          <th>Posted By</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse ($properties as $index => $property)
-          <tr>
-            <td>{{ $properties->firstItem() + $index }}</td>
-            <td>
-              <div class="d-flex align-items-center">
-                
-                <div>
-                  <!-- <div class="fw-bold">{{ $property->property_name }}</div> -->
-                  <div class="fw-bold">{{ $property->propertyName }}</div>
-                  <small class="text-muted">{{ $property->address }}</small>
-                </div>
-              </div>
-            </td>
-           
-
-            <td>{{ $propertyTypes[$property->propertyType] ?? 'N/A' }}</td>
-            <td>
-                <form method="POST" action="{{ route('admin.properties.toggleVerified', $property->id) }}">
-                    @csrf
-                    @method('PUT')
-                    <button class="btn btn-sm {{ $property->verified ? 'btn-success' : 'btn-outline-danger' }}">
-                        {{ $property->verified ? 'Verified' : 'Not Verified' }}
-                    </button>
-                </form>
-            </td>
-
-
-            <td>₹{{ number_format($property->price) }}</td>
-            <td>{{ $property->user->name ?? 'N/A' }}</td>
-            <td>
-            <a href="{{ route('property.show', $property->id) }}" class="btn btn-sm px-2 btn-outline-info" target="_blank">
-              <i class="fa fa-eye"></i></a>
-
-
-              <a href="{{ route('admin.properties.edit', $property->id) }}" class="btn btn-sm px-2 btn-outline-warning"><i class="fa fa-edit"></i></a>
-
-              <form action="{{ route('admin.properties.duplicate', $property->id) }}"
-                    method="POST"
-                    class="d-inline"
-                    onsubmit="return confirm('Duplicate this property?')">
-                  @csrf
-                  <button type="submit" class="btn btn-sm btn-outline-secondary px-2">
-                      <i class="fa fa-copy"></i>
-                  </button>
-              </form>
-
-              
-              <form action="{{ route('admin.properties.destroy', $property->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this property?')">
-    @csrf
-    @method('DELETE')
-    <button type="submit" class="btn btn-sm btn-outline-danger px-2">
-        <i class="fa fa-trash"></i>
-    </button>
-</form>
-
-
-
-            </td>
-          </tr>
-        @empty
-          <tr>
-            <td colspan="7" class="text-center text-muted py-4">No properties found.</td>
-          </tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
+<div id="admin-property-list-ajax-target">
+  @include('admin.partials.property-list-content')
 </div>
-
-<div class="row">
-                        <div class="col-12">
-                            <ul class="pagination mt-3">
-                                @if ($properties->onFirstPage())
-                                    <li class="page-item disabled me-auto">
-                                        <span class="page-link b-radius-none">Prev</span>
-                                    </li>
-                                @else
-                                    <li class="page-item me-auto">
-                                        <a class="page-link b-radius-none"
-                                            href="{{ $properties->previousPageUrl() }}">Prev</a>
-                                    </li>
-                                @endif
-                                @foreach ($properties->getUrlRange(1, $properties->lastPage()) as $page => $url)
-                                    <li class="page-item {{ $page == $properties->currentPage() ? 'active' : '' }}">
-                                        <a href="{{ $url }}" class="page-link">{{ $page }}</a>
-                                    </li>
-                                @endforeach
-                                @if ($properties->hasMorePages())
-                                    <li class="page-item ms-auto">
-                                        <a class="page-link b-radius-none"
-                                            href="{{ $properties->nextPageUrl() }}">Next</a>
-                                    </li>
-                                @else
-                                    <li class="page-item disabled ms-auto">
-                                        <span class="page-link b-radius-none">Next</span>
-                                    </li>
-                                @endif
-                            </ul>
-                        </div>
-                    </div>
 
 @endsection

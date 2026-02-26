@@ -1,5 +1,9 @@
 @extends('layouts.home')
 
+@section('title', 'Direct Deal UAE – Buy, Sell & Rent Verified Properties in Dubai | Lowest Brokerage')
+@section('meta_description', 'Buy, sell and rent verified properties in Dubai. Lowest brokerage fees, RERA-licensed, 100% verified listings. No fake ads. Search apartments, villas, townhouses.')
+@section('meta_keywords', 'buy property Dubai, rent Dubai, sell property Dubai, verified listings UAE, RERA Dubai, lowest brokerage, apartments for sale Dubai, villas for rent')
+
 @section('content')
 <style>
 .banner {
@@ -1357,7 +1361,7 @@ Featured Properties-->
                                     <img class="img-fluid rounded-top"
                                         style="height: 220px; width: 100%; object-fit: cover; object-position: center;"
                                         src="{{ $property->pictures->first() ? Storage::url($property->pictures->first()->path) : asset('images/placeholder.jpg') }}"
-                                        alt="">
+                                        alt="{{ $property->propertyName }}">
                                     
                                     <!-- Trending icon - now top-left -->
                                     <span class="property-trending position-absolute top-0 start-0 text-warning">

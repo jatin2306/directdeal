@@ -97,6 +97,7 @@ class Property extends Model
         if ($propertyType) {
             return $query->where('propertyType', $propertyType);
         }
+        return $query;
     }
 
     // Scope for category
@@ -105,6 +106,7 @@ class Property extends Model
         if ($category) {
             return $query->where('property_category_id', $category);
         }
+        return $query;
     }
 
     // Scope for child type
@@ -113,6 +115,7 @@ class Property extends Model
         if ($childType) {
             return $query->where('child_type_id', $childType);
         }
+        return $query;
     }
 
     public function scopeFilterByPrice($query, $priceMin, $priceMax)
@@ -120,6 +123,7 @@ class Property extends Model
         if ($priceMin !== null && $priceMax !== null) {
             $query->whereBetween('price', [$priceMin, $priceMax]);
         }
+        return $query;
     }
 
 
@@ -129,6 +133,16 @@ class Property extends Model
         if (!is_null($status)) {
             return $query->where('status', $status);
         }
+        return $query;
+    }
+
+    // Scope for verified (admin: Verified / Not Verified)
+    public function scopeFilterByVerified($query, $verified)
+    {
+        if ($verified !== null && $verified !== '') {
+            return $query->where('verified', (bool) (int) $verified);
+        }
+        return $query;
     }
     // Scope for Bedrooms Bathrooms and Location
 
@@ -179,6 +193,68 @@ class Property extends Model
         return $this->belongsToMany(User::class, 'property_user_subscriptions')
                     ->withPivot('notification_type')
                     ->withTimestamps();
+    }
+
+    /**
+     * Admin panel: search across all relevant text/numeric fields (case-insensitive).
+     */
+    public function scopeAdminSearch($query, $term)
+    {
+        if ($term === null || $term === '') {
+            return $query;
+        }
+
+        $term = trim($term);
+        if ($term === '') {
+            return $query;
+        }
+
+        $pattern = '%' . mb_strtolower($term) . '%';
+        $termLower = mb_strtolower($term);
+
+        return $query->where(function ($q) use ($term, $termLower, $pattern) {
+            // Type: Buy / Rent / Off Plan
+            if (str_contains($termLower, 'buy')) {
+                $q->orWhere('propertyType', '1');
+            }
+            if (str_contains($termLower, 'rent')) {
+                $q->orWhere('propertyType', '2');
+            }
+            if (str_contains($termLower, 'off plan') || str_contains($termLower, 'offplan')) {
+                $q->orWhere('propertyType', '3');
+            }
+            // Status: Verified / Not verified
+            if (str_contains($termLower, 'unverified') || (str_contains($termLower, 'not') && str_contains($termLower, 'verified'))) {
+                $q->orWhere('verified', false);
+            } elseif (str_contains($termLower, 'verified')) {
+                $q->orWhere('verified', true);
+            }
+            // Case-insensitive text search (e.g. "marwa" matches "Marwa Homes")
+            $q->whereRaw('LOWER(propertyName) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(address, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(city, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(sub_area, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(community, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(description, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(reference, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(unitNo, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(zone_name, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(dld_permit_number, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(broker_license, "")) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(COALESCE(agent_license, "")) LIKE ?', [$pattern])
+                // Posted By: search related user name and email
+                ->orWhereHas('user', function ($userQuery) use ($pattern) {
+                    $userQuery->whereRaw('LOWER(name) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(COALESCE(email, "")) LIKE ?', [$pattern]);
+                });
+            // Numeric: match price or id if term looks like a number
+            if (is_numeric($term)) {
+                $q->orWhere('price', (float) $term)
+                    ->orWhere('id', (int) $term)
+                    ->orWhere('bedrooms', (int) $term)
+                    ->orWhere('bathrooms', (int) $term);
+            }
+        });
     }
 
     public function scopeSmartSearch($query, $search)
