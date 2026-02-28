@@ -22,7 +22,7 @@
     @endif
     <!-- Dynamic meta tags for social media sharing-->
     @stack('meta')
-    <title>@yield('title', 'Direct Deal UAE – Buy, Sell & Rent Properties in Dubai')</title>
+    <title>@yield('title', 'Buy, Sell & Rent Verified Properties in Dubai | Direct Deal UAE')</title>
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" />

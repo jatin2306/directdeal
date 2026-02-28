@@ -283,7 +283,7 @@ public function scopeFilterByStatus($query, $status)
             }
         }
 
-        return redirect()->route('submit.property')->with('success', 'Property created successfully and Under Review by Admin');
+        return redirect()->route('add.listing')->with('success', 'Property created successfully and Under Review by Admin');
         } catch (\Exception $e) {
             dd('Error:', $e->getMessage());
             //return redirect()->back()->with('error', 'An error occurred while creating the property. Please try again.');
@@ -321,12 +321,24 @@ public function scopeFilterByStatus($query, $status)
 
 
     /**
-     * Display the specified resource.
+     * Display the specified resource. Accepts SEO slug or numeric ID.
+     * Slug is computed (ends with -{id}), no DB column needed.
      */
-    public function show($id)
-    { 
-        $property = Property::with('pictures', 'user', 'category', 'childTypeRelation')->findOrFail($id); // Fetch a specific property
-        
+    public function show($slugOrId)
+    {
+        if (is_numeric($slugOrId)) {
+            $property = Property::with('pictures', 'user', 'category', 'childTypeRelation')->findOrFail($slugOrId);
+            // Redirect to SEO slug URL for better ranking (301 permanent)
+            return redirect()->route('property.show', $property->slug, 301);
+        }
+
+        // Slug format: ...-{id} — extract id from end
+        if (!preg_match('/-(\d+)$/', $slugOrId, $m)) {
+            abort(404);
+        }
+        $property = Property::with('pictures', 'user', 'category', 'childTypeRelation')->findOrFail($m[1]);
+        $id = $property->id;
+
         // Check if the user has already reviewed this property
         $review = Review::where('property_id', $id)
         ->where('user_id', auth()->id())

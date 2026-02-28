@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Auth\LoginController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Models\Property;
+use App\Models\Category;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
@@ -48,6 +51,33 @@ Route::get('/contact', function () {
     return view('contact');
 });
 
+// SEO: category listing pages (e.g. /category/apartments)
+Route::get('/category/{slug}', function ($slug) {
+    $category = Category::all()->first(fn ($c) => Str::slug($c->name) === $slug);
+    if (!$category) {
+        abort(404);
+    }
+    return redirect()->route('property.index', ['property_category_id' => $category->id], 301);
+})->name('category.show');
+
+// Blog (placeholder – replace with blog index when ready)
+Route::get('/blog', function () {
+    return redirect()->route('home');
+})->name('blog.index');
+
+// SEO: area listing pages (e.g. /area/dubai-marina)
+Route::get('/area/{slug}', function ($slug) {
+    $areas = Property::verified()->distinct()->pluck('city')->merge(
+        Property::verified()->distinct()->pluck('sub_area')
+    )->filter()->unique()->values();
+    $areaName = $areas->first(fn ($name) => Str::slug($name) === $slug);
+    if (!$areaName) {
+        abort(404);
+    }
+    return redirect()->route('property.index', ['location' => $areaName], 301);
+})->name('area.show');
+
+// Dynamic sitemap: homepage, categories, areas, blog placeholder, properties (SEO slugs)
 Route::get('/sitemap.xml', function () {
     $base = rtrim(config('app.url'), '/');
     $urls = [
@@ -58,9 +88,31 @@ Route::get('/sitemap.xml', function () {
         ['loc' => $base . '/contact', 'priority' => '0.7', 'changefreq' => 'monthly'],
         ['loc' => $base . '/advertising', 'priority' => '0.6', 'changefreq' => 'monthly'],
     ];
-    foreach (Property::verified()->select('id', 'updated_at')->cursor() as $p) {
+    // Category pages
+    foreach (Category::all() as $cat) {
         $urls[] = [
-            'loc' => $base . '/properties/' . $p->id,
+            'loc' => $base . '/category/' . Str::slug($cat->name),
+            'priority' => '0.8',
+            'changefreq' => 'weekly',
+        ];
+    }
+    // Area pages (city + sub_area)
+    $areas = Property::verified()->distinct()->pluck('city')->merge(
+        Property::verified()->distinct()->pluck('sub_area')
+    )->filter()->unique()->values();
+    foreach ($areas as $areaName) {
+        $urls[] = [
+            'loc' => $base . '/area/' . Str::slug($areaName),
+            'priority' => '0.8',
+            'changefreq' => 'weekly',
+        ];
+    }
+    // Blog (placeholder – add routes/pages when blog exists)
+    $urls[] = ['loc' => $base . '/blog', 'priority' => '0.6', 'changefreq' => 'weekly'];
+    // Property pages with SEO-friendly slugs (computed from columns, no DB slug column)
+    foreach (Property::verified()->with('childTypeRelation')->get() as $p) {
+        $urls[] = [
+            'loc' => $base . '/properties/' . $p->slug,
             'priority' => '0.8',
             'changefreq' => 'weekly',
             'lastmod' => $p->updated_at?->toW3cString(),
@@ -86,11 +138,11 @@ Route::fallback(function () {
 Route::post('/toggle-favorite/{property}', [FavoriteController::class, 'toggleFavorite'])->name('toggleFavorite')->middleware('auth');
 
 Route::get('/properties', [PropertyController::class, 'index'])->name('property.index'); // List properties
-Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('property.show'); // Property details
+Route::get('/properties/{slugOrId}', [PropertyController::class, 'show'])->name('property.show'); // Property details (SEO slug or id)
 
 Route::get('/submit-property', function () {
     return view('submit-property');
-})->middleware(['auth', 'verified'])->name('submit.property');
+})->middleware(['auth', 'verified'])->name('submit. property');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard/profile', [ProfileController::class, 'edit'])->name('dashboard');

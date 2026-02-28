@@ -37,7 +37,7 @@
             <td>₹{{ number_format($property->price) }}</td>
             <td>{{ $property->user->name ?? 'N/A' }}</td>
             <td>
-              <a href="{{ route('property.show', $property->id) }}" class="btn btn-sm px-2 btn-outline-info" target="_blank"><i class="fa fa-eye"></i></a>
+              <a href="{{ route('property.show', $property->slug ?? $property->id) }}" class="btn btn-sm px-2 btn-outline-info" target="_blank"><i class="fa fa-eye"></i></a>
               <a href="{{ route('admin.properties.edit', $property->id) }}" class="btn btn-sm px-2 btn-outline-warning"><i class="fa fa-edit"></i></a>
               <form action="{{ route('admin.properties.duplicate', $property->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Duplicate this property?')">
                 @csrf

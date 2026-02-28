@@ -464,7 +464,7 @@
                             <div class="suggested-properties mt-5">
                                 <h4 class="mb-4">Suggested Properties</h4>
                                 @foreach ($suggestedProperties as $property)
-                                <div class="property-item property-col-list mt-4" data-href="{{ route('property.show', $property->id) }}">
+                                <div class="property-item property-col-list mt-4" data-href="{{ route('property.show', $property->slug ?? $property->id) }}">
 
 
                                         <div class="row g-0">
@@ -497,7 +497,7 @@
                                                         <div class="property-details-inner-box">
                                                             <div class="property-details-inner-box-left">
                                                                 <h5 class="property-title"><a
-                                                                        href="{{ route('property.show', $property->id) }}">{{ $property->propertyName }}</a>
+                                                                        href="{{ route('property.show', $property->slug ?? $property->id) }}">{{ $property->propertyName }}</a>
                                                                 </h5>
                                                                 <span class="property-address"><i
                                                                         class="fas fa-map-marker-alt fa-xs"></i>{{ $property->address }}</span>
@@ -573,7 +573,7 @@
                         @endif
                     @else
                         @foreach ($properties as $property)
-                        <div class="property-item property-col-list mt-4" data-href="{{ route('property.show', $property->id) }}">
+                        <div class="property-item property-col-list mt-4" data-href="{{ route('property.show', $property->slug ?? $property->id) }}">
 
                                 <div class="row g-0">
                                     <div class="col-lg-4 col-md-5" style="cursor: pointer;">
@@ -601,13 +601,13 @@
                                     </div>
 
                                     <div class="col-lg-8 col-md-7"
-                                        data-href="{{ route('property.show', $property->id) }}" style="cursor: pointer;">
+                                        data-href="{{ route('property.show', $property->slug ?? $property->id) }}" style="cursor: pointer;">
                                         <div class="property-details">
                                             <div class="property-details-inner">
                                               <div class="property-details-inner-box d-flex justify-content-between align-items-start flex-wrap">
                                                 <div class="property-details-inner-box-left" style="max-width: 75%;">
                                                     <h5 class="property-title">
-                                                        <a href="{{ route('property.show', $property->id) }}">{{ $property->propertyName }}</a>
+                                                        <a href="{{ route('property.show', $property->slug ?? $property->id) }}">{{ $property->propertyName }}</a>
                                                     </h5>
                                                     <span class="property-address d-block text-truncate">
                                                         <i class="fas fa-map-marker-alt fa-xs"></i> {{ $property->address }}
@@ -656,7 +656,7 @@
 @php
     $subject = rawurlencode('Interested in ' . $property->propertyName . ' - ' . number_format($property->price, 0) . ' AED');
 
-    $bodyText = "I'm interested to buy this property: {$property->propertyName}\n" . route('property.show', $property->id);
+    $bodyText = "I'm interested to buy this property: {$property->propertyName}\n" . route('property.show', $property->slug ?? $property->id);
 
     $body = rawurlencode($bodyText);
 

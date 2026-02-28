@@ -3,6 +3,7 @@
 use App\Models\Admin;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -23,3 +24,4 @@ Artisan::command('admin:password {email : The admin email} {password? : The new 
 
     return 0;
 })->purpose('Change an admin user password');
+

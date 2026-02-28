@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use App\Models\PropertyPicture;
 use App\Models\Category;
 use App\Models\ChildType;
@@ -57,6 +58,34 @@ class Property extends Model
     protected $casts = [
         'amenities' => 'array',
     ];
+
+    /**
+     * SEO-friendly slug computed from existing fields (no DB column).
+     * e.g. 2-bedroom-apartment-for-sale-dubai-marina-160
+     */
+    public function getSlugAttribute(): string
+    {
+        return $this->generateSlug();
+    }
+
+    /**
+     * Generate SEO-friendly slug from existing columns.
+     */
+    public function generateSlug(): string
+    {
+        $bedrooms = $this->bedrooms;
+        $bedPart = ($bedrooms === null || $bedrooms === '') ? 'studio' : $bedrooms . '-bedroom';
+        $typePart = 'property';
+        if ($this->relationLoaded('childTypeRelation') && $this->childTypeRelation) {
+            $typePart = Str::slug($this->childTypeRelation->name);
+        } elseif ($this->child_type_id) {
+            $ct = ChildType::find($this->child_type_id);
+            $typePart = $ct ? Str::slug($ct->name) : 'property';
+        }
+        $dealPart = $this->propertyType == '1' ? 'sale' : ($this->propertyType == '2' ? 'rent' : 'off-plan');
+        $areaPart = Str::slug($this->sub_area ?: $this->city ?: 'dubai');
+        return Str::slug($bedPart . '-' . $typePart . '-for-' . $dealPart . '-' . $areaPart) . '-' . $this->id;
+    }
     
     // Relationship with User model
     public function user()

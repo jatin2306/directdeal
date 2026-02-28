@@ -1380,7 +1380,7 @@ Featured Properties-->
                                 </div>
                                 <div class="property-details p-3 bg-white">
                                     <h6 class="property-title mb-1 fw-semibold">
-                                        <a href="{{ route('property.show', $property->id) }}" class="text-dark">
+                                        <a href="{{ route('property.show', $property->slug ?? $property->id) }}" class="text-dark">
                                             {{ $property->propertyName }}
                                         </a>
                                     </h6>
@@ -1407,7 +1407,7 @@ Featured Properties-->
                                 </div>
                                 <!-- Your original "See Details" part -->
                                 <div class="property-btn">
-                                  <a class="property-link btn btn-primary d-block text-center w-100" href="{{ route('property.show', $property->id) }}">See Details</a>
+                                  <a class="property-link btn btn-primary d-block text-center w-100" href="{{ route('property.show', $property->slug ?? $property->id) }}">See Details</a>
                                 </div>
                             </div>
                         </div>

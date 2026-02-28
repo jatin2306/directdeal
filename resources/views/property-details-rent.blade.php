@@ -8,7 +8,7 @@
 <meta property="og:title" content="{{ $property->propertyName }}" />
 <meta property="og:description" content="{{ Str::limit($property->description, 150) }}" />
 <meta property="og:image" content="{{ asset($property->pictures->isNotEmpty() ? 'storage/' . $property->pictures->first()->path : 'images/default-property.jpg') }}" />
-<meta property="og:url" content="{{ url('/properties/' . $property->id) }}" />
+<meta property="og:url" content="{{ route('property.show', $property->slug ?? $property->id) }}" />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="en_US" />
 @endpush
@@ -20,7 +20,7 @@
     "@type": "RealEstateListing",
     "name": {!! json_encode($property->propertyName) !!},
     "description": {!! json_encode(Str::limit(strip_tags($property->description ?? ''), 200)) !!},
-    "url": {!! json_encode(url('/properties/' . $property->id)) !!},
+    "url": {!! json_encode(route('property.show', $property->slug ?? $property->id)) !!},
     "address": { "@type": "PostalAddress", "addressLocality": {!! json_encode($property->city ?? 'Dubai') !!}, "streetAddress": {!! json_encode($property->address ?? '') !!} },
     "offers": { "@type": "Offer", "price": "{{ $property->price }}", "priceCurrency": "AED" }
 }
@@ -104,7 +104,7 @@
                     <div class="col-lg-4">
                         <div class="price-meta">
                           @php
-                          $propertyUrl = url('/properties') . '/' . $property->id;
+                          $propertyUrl = route('property.show', $property->slug ?? $property->id);
                           @endphp
                             <ul class="property-detail-meta list-unstyled mt-1 mb-5 mb-lg-3">
                                 <li><a href="#"> <i
@@ -458,7 +458,7 @@
                                       <div class="recent-list-item mb-3">
                                           <img src="{{ $similar->pictures->isNotEmpty() ? asset('storage/' . $similar->pictures->first()->path) : asset('images/placeholder.jpg') }}" alt="{{ $similar->name }}" class="img-fluid">
                                           <div class="mt-2">
-                                              <a class="address mb-2" href="{{ route('property.show', $similar->id) }}">{{ $similar->propertyName }}</a>
+                                              <a class="address mb-2" href="{{ route('property.show', $similar->slug ?? $similar->id) }}">{{ $similar->propertyName }}</a>
                                               <span class="text-primary">${{ $similar->price }}</span>
                                           </div>
                                       </div>

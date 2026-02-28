@@ -115,14 +115,14 @@
                                   </div>
                               </div>
 
-                              <div class="col-lg-8 col-md-7" data-href="{{ route('property.show', $property->id) }}"
+                              <div class="col-lg-8 col-md-7" data-href="{{ route('property.show', $property->slug ?? $property->id) }}"
                                   style="cursor: pointer;">
                                   <div class="property-details">
                                       <div class="property-details-inner">
                                           <div class="property-details-inner-box">
                                               <div class="property-details-inner-box-left">
                                                   <h5 class="property-title"><a class="me-2" 
-                                                          href="{{ route('property.show', $property->id) }}">{{ $property->propertyName }}
+                                                          href="{{ route('property.show', $property->slug ?? $property->id) }}">{{ $property->propertyName }}
                                                       </a><span class="badge {{ $property->verified ? 'bg-success' : 'bg-warning text-dark' }}">
                                                         {{ $property->verified ? 'Verified' : 'Pending Verification' }}
                                                     </span></h5>
@@ -224,7 +224,7 @@
                         <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No Listings" style="width: 120px; opacity: 0.8;">
                         <h4 class="mt-3 text-muted">No listings found</h4>
                         <p>Looks like you haven’t added any properties yet.</p>
-                        <a href="{{ route('submit.property') }}" class="btn btn-primary mt-2">
+                        <a href="{{ route('add.listing') }}" class="btn btn-primary mt-2">
                             <i class="fa fa-plus-circle"></i> Add Property
                         </a>
                         </div>

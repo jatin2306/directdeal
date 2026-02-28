@@ -114,14 +114,14 @@
                                   </div>
                               </div>
 
-                              <div class="col-lg-8 col-md-7" data-href="{{ route('property.show', $property->id) }}"
+                              <div class="col-lg-8 col-md-7" data-href="{{ route('property.show', $property->slug ?? $property->id) }}"
                                   style="cursor: pointer;">
                                   <div class="property-details">
                                       <div class="property-details-inner">
                                           <div class="property-details-inner-box">
                                               <div class="property-details-inner-box-left">
                                                   <h5 class="property-title"><a class="me-2" 
-                                                          href="{{ route('property.show', $property->id) }}">{{ $property->propertyName }}
+                                                          href="{{ route('property.show', $property->slug ?? $property->id) }}">{{ $property->propertyName }}
                                                       </a><span class="badge {{ $property->verified ? 'bg-success' : 'bg-warning text-dark' }}">
                                                         {{ $property->verified ? 'Verified' : 'Pending Verification' }}
                                                     </span></h5>

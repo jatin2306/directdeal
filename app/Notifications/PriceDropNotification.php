@@ -31,12 +31,12 @@ class PriceDropNotification extends Notification
 
     public function toMail($notifiable)
     {
-        $property = Property::find($this->propertyId);
+        $property = Property::with('childTypeRelation')->find($this->propertyId);
         if ($property) {
             return (new MailMessage)
                 ->subject('Price Drop Alert: ' . $property->propertyName)
                 ->line('The price has dropped from ' . number_format($this->oldPrice, 2) . ' to ' . number_format($this->newPrice, 2) . '!')
-                ->action('View Property', url('/properties/' . $property->id))
+                ->action('View Property', route('property.show', $property->slug))
                 ->line('Act fast before it’s gone!');
         } else {
             Log::error('Property or Property name is missing in PriceDropNotification for Property ID: ' . $this->propertyId);
@@ -48,12 +48,12 @@ class PriceDropNotification extends Notification
 
     public function toArray($notifiable)
     {
-        $property = Property::find($this->propertyId);
+        $property = Property::with('childTypeRelation')->find($this->propertyId);
         if ($property) {
             return [
                 'property_id' => $property->id,
                 'message' => 'The price for ' . $property->propertyName . ' has dropped!',
-                'url' => url('/properties/' . $property->id),
+                'url' => route('property.show', $property->slug),
             ];
         } else {
             Log::error('Property is missing in toArray for notification with ID: ' . $this->propertyId);
