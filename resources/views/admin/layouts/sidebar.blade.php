@@ -19,6 +19,12 @@
       </li>
 
       <li class="nav-item mb-2">
+        <a class="nav-link text-white {{ request()->routeIs('admin.banners.*') ? 'active bg-primary' : '' }}" href="{{ route('admin.banners.index') }}">
+          <i class="fa fa-image me-2"></i> Banners
+        </a>
+      </li>
+
+      <li class="nav-item mb-2">
         <a class="nav-link text-white {{ request()->routeIs('admin.amenities.index') ? 'active bg-primary' : '' }}" href="{{ route('admin.amenities.index') }}">
             <i class="fa fa-cogs me-2"></i> Amenities
         </a>

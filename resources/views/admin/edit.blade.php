@@ -120,7 +120,7 @@
         rows="5"
         placeholder="Enter property description..."
         required>{{ old('description', $property->description) }}</textarea> -->
-        <textarea name="any_upgrades" class="form-control">{{ old('any_upgrades', $property->any_upgrades) }}</textarea>
+        <textarea name="any_upgrades" class="form-control" rows="20" style="min-height: 220px;">{{ old('any_upgrades', $property->any_upgrades) }}</textarea>
 </div>
 
                         <div class="mb-3">

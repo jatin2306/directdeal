@@ -193,50 +193,42 @@
 
 </style>
     <!--=================================
-        banner -->
+        banner (dynamic, rotate every 5 sec) -->
+    @if(isset($banners) && $banners->isNotEmpty())
     <section class="position-relative">
-
         <div class="relative">
-        <div class="slider">
-        <div class="slides" style="transform: translateX(0%);">
-
-        <div class="slidee overlay" style=" background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://directdealuae.com/images/Direct_Deal_Banner01.jpg'); "> 
-        <div class="content"> 
-        <p>Buy, Sell or Rent</p> 
-        <h3>Be Direct! Be Intelligent!</h3> 
-         <a href="{{ route('add.listing') }}" class="btn" style=" position: relative; top: 30px; ">GET STARTED</a> 
-        </div> 
+            <div class="slider">
+                <div class="slides" style="transform: translateX(0%);">
+                    @foreach($banners as $banner)
+                    @php $placement = $banner->text_placement ?? 'left'; @endphp
+                    <div class="slidee overlay" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ $banner->image_url ?? '' }}');">
+                        <div class="content content--{{ $placement }}">
+                            @if($banner->sub_heading)<p>{{ $banner->sub_heading }}</p>@endif
+                            @if($banner->heading)<h3>{{ $banner->heading }}</h3>@endif
+                            @if($banner->cta_text && $banner->cta_url)
+                                <a href="{{ $banner->cta_url }}" class="btn" style="position: relative; top: 30px;">{{ $banner->cta_text }}</a>
+                            @elseif($banner->cta_text)
+                                <a href="{{ route('add.listing') }}" class="btn" style="position: relative; top: 30px;">{{ $banner->cta_text }}</a>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @if($banners->count() > 1)
+                <div class="prev"></div>
+                <div class="next"></div>
+                @endif
+            </div>
+            @if($banners->count() > 1)
+            <div class="dots">
+                @foreach($banners as $i => $b)
+                <div class="dot {{ $i === 0 ? 'active' : '' }}"></div>
+                @endforeach
+            </div>
+            @endif
         </div>
-
-
-        <div class="slidee" style="background-image: url(https://directdealuae.com/images/srkBanner.png);">
-        <div class="content">
-        <p>Be Direct</p>
-        <h3>Shahrukhz By Danube</h3>
-        <a href="https://www.directdealuae.com/properties?location=Shahrukhz+Tower" class="btn" style=" position: relative; top: 30px; ">Explore Project</a>
-        </div>
-        </div>
-
-
-        </div>
-
-        <!-- Controls -->
-        
-        <div class="prev"></div>
-        <div class="next"></div>
-
-        <!-- Dots -->
-        
-        </div>
-
-        <div class="dots">
-           <div class="dot active"></div>
-           <div class="dot"></div>
-        </div>
-
-        </div>
-        
     </section>
+    @endif
     
 
     <style>
@@ -327,7 +319,7 @@
       width: 100%;
       height: 30dvh;
       overflow: hidden;
-      min-height:300px;
+      min-height:400px;
     }
 
     .slides {
@@ -338,10 +330,12 @@
 
     .content {
       padding: 20px;
-      margin-left: 100px;
       color: #fff;
       /* max-width: 500px; */
     }
+    .content--left { margin-left: 100px; margin-right: auto; text-align: left; }
+    .content--center { margin-left: auto; margin-right: auto; text-align: center; }
+    .content--right { margin-left: auto; margin-right: 100px; text-align: right; }
 
     .content h3 {
       font-size: 35px;
@@ -431,6 +425,7 @@
       h1 { font-size: 25px; }
       h2 { font-size: 15px; }
       .content { margin-left: 0; }
+      .content--right { margin-right: 0; }
       .prev, .next { display: none; }
       .content { max-width: 250px; z-index: 1;}
       .slidee { height: 200px; position: relative; }
@@ -452,69 +447,72 @@
 </style>
 
 <script>
+(function() {
+  const sliderTrack1 = document.querySelector('.slides');
+  const slideItems1 = document.querySelectorAll('.slidee');
+  const buttonPrev1 = document.querySelector('.prev');
+  const buttonNext1 = document.querySelector('.next');
+  const navigationDots1 = document.querySelectorAll('.dot');
 
-const sliderTrack1 = document.querySelector('.slides');
-const slideItems1 = document.querySelectorAll('.slidee');
-const buttonPrev1 = document.querySelector('.prev');
-const buttonNext1 = document.querySelector('.next');
-const navigationDots1 = document.querySelectorAll('.dot');
+  if (!slideItems1.length) return;
 
-let currentIndex1 = 0;
-let dragStartX1 = 0;
-let dragEndX1 = 0;
+  let currentIndex1 = 0;
+  let dragStartX1 = 0;
+  let dragEndX1 = 0;
+  let autoSlideTimer;
 
-function showSlideAt1(indexToShow1) {
-  if (indexToShow1 < 0) {
-    currentIndex1 = slideItems1.length - 1;
-  } else if (indexToShow1 >= slideItems1.length) {
-    currentIndex1 = 0;
-  } else {
-    currentIndex1 = indexToShow1;
+  function showSlideAt1(indexToShow1) {
+    if (slideItems1.length === 0) return;
+    if (indexToShow1 < 0) {
+      currentIndex1 = slideItems1.length - 1;
+    } else if (indexToShow1 >= slideItems1.length) {
+      currentIndex1 = 0;
+    } else {
+      currentIndex1 = indexToShow1;
+    }
+    if (sliderTrack1) sliderTrack1.style.transform = 'translateX(-' + currentIndex1 * 100 + '%)';
+    navigationDots1.forEach(function(dot1, i1) {
+      dot1.classList.toggle('active', i1 === currentIndex1);
+    });
   }
 
-  sliderTrack1.style.transform = `translateX(-${currentIndex1 * 100}%)`;
-  navigationDots1.forEach((dot1, i1) => {
-    dot1.classList.toggle('active', i1 === currentIndex1);
+  if (buttonPrev1) buttonPrev1.addEventListener('click', function() { showSlideAt1(currentIndex1 - 1); });
+  if (buttonNext1) buttonNext1.addEventListener('click', function() { showSlideAt1(currentIndex1 + 1); });
+  navigationDots1.forEach(function(dot1, i1) {
+    dot1.addEventListener('click', function() { showSlideAt1(i1); });
   });
-}
 
-buttonPrev1.addEventListener('click', () => showSlideAt1(currentIndex1 - 1));
-buttonNext1.addEventListener('click', () => showSlideAt1(currentIndex1 + 1));
-navigationDots1.forEach((dot1, i1) => {
-  dot1.addEventListener('click', () => showSlideAt1(i1));
-});
-
-// --- Drag / Swipe Support ---
-sliderTrack1.addEventListener('touchstart', (event1) => {
-  dragStartX1 = event1.touches[0].clientX;
-});
-
-sliderTrack1.addEventListener('touchend', (event1) => {
-  dragEndX1 = event1.changedTouches[0].clientX;
-  detectSwipeDirection1();
-});
-
-sliderTrack1.addEventListener('mousedown', (event1) => {
-  dragStartX1 = event1.clientX;
-});
-
-sliderTrack1.addEventListener('mouseup', (event1) => {
-  dragEndX1 = event1.clientX;
-  detectSwipeDirection1();
-});
-
-function detectSwipeDirection1() {
-  const swipeDistance1 = dragEndX1 - dragStartX1;
-  const swipeThreshold1 = 50; // Minimum px to count as swipe
-  if (Math.abs(swipeDistance1) > swipeThreshold1) {
-    if (swipeDistance1 > 0) {
-      showSlideAt1(currentIndex1 - 1); // swipe right
-    } else {
-      showSlideAt1(currentIndex1 + 1); // swipe left
+  // Auto-rotate every 5 seconds (only if more than one slide)
+  if (slideItems1.length > 1) {
+    function startAutoSlide() {
+      autoSlideTimer = setInterval(function() {
+        showSlideAt1(currentIndex1 + 1);
+      }, 5000);
+    }
+    startAutoSlide();
+    // Pause on hover (optional)
+    if (sliderTrack1) {
+      sliderTrack1.addEventListener('mouseenter', function() { clearInterval(autoSlideTimer); });
+      sliderTrack1.addEventListener('mouseleave', startAutoSlide);
     }
   }
-}
 
+  // Drag / Swipe
+  if (sliderTrack1) {
+    sliderTrack1.addEventListener('touchstart', function(e) { dragStartX1 = e.touches[0].clientX; });
+    sliderTrack1.addEventListener('touchend', function(e) {
+      dragEndX1 = e.changedTouches[0].clientX;
+      var d = dragEndX1 - dragStartX1;
+      if (Math.abs(d) > 50) showSlideAt1(d > 0 ? currentIndex1 - 1 : currentIndex1 + 1);
+    });
+    sliderTrack1.addEventListener('mousedown', function(e) { dragStartX1 = e.clientX; });
+    sliderTrack1.addEventListener('mouseup', function(e) {
+      dragEndX1 = e.clientX;
+      var d = dragEndX1 - dragStartX1;
+      if (Math.abs(d) > 50) showSlideAt1(d > 0 ? currentIndex1 - 1 : currentIndex1 + 1);
+    });
+  }
+})();
 </script>
 
     <!--=================================

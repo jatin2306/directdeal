@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Property; // Import any necessary models
+use App\Models\Banner;
+use App\Models\Property;
 use App\Models\Category;
 use App\Models\ChildType;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
+    $banners = Banner::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+
     // Fetch featured properties for the homepage without caching
     $featuredProperties = Property::with(['pictures', 'childTypeRelation'])
         ->where('is_featured', true)
@@ -80,8 +83,8 @@ class HomeController extends Controller
     $bedroomOptions = range(1, 10); // Or dynamically fetch based on your data
     $bathroomOptions = range(1, 10); // Same for bathrooms
 
-    // Return the home view with all the necessary data for the form
     return view('home', [
+        'banners' => $banners,
         'featuredProperties' => $featuredProperties,
         'properties' => $properties,
         'location' => $location,

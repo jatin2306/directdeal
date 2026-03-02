@@ -66,4 +66,5 @@ Route::prefix('admin')->middleware('auth:admin')->group(function () {
 
     Route::get('notifications', [DashboardController::class, 'notifications'])->name('admin.notifications');
 
+    Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class)->names('admin.banners')->except(['show']);
 });
