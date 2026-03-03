@@ -10,6 +10,7 @@ use Illuminate\View\View;
 use App\Models\Property;
 use App\Models\PropertyPicture;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Models\Category;
@@ -18,6 +19,7 @@ use App\Models\Amenity;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use App\Models\UserListing;
 
 class PropertyController extends Controller
@@ -46,31 +48,64 @@ public function duplicate($id)
         $newProperty->save();
 
         /**
-         * Re-upload images for NEW property
+         * Copy all property images into public/storage/property_pictures/ so asset('storage/'.path) works.
+         * This app uses public/storage as a real directory (not symlink to storage/app/public).
          */
+        $pathNormalized = static function ($p) {
+            $p = trim((string) $p);
+            $p = preg_replace('#^public/#', '', $p);
+            return $p === '' ? null : $p;
+        };
+
+        $destDir = public_path('storage/property_pictures');
+        if (! File::isDirectory($destDir)) {
+            File::makeDirectory($destDir, 0755, true);
+        }
+
+        $defaultDisk = config('filesystems.default');
+
         foreach ($property->pictures as $picture) {
-
-            // Old image absolute path
-            $oldPath = storage_path('app/public/' . $picture->path);
-
-            if (!file_exists($oldPath)) {
+            $path = $pathNormalized($picture->path);
+            if ($path === null) {
                 continue;
             }
 
-            // Generate new filename
+            // Resolve source file: try public/storage first (where this app serves from), then disks
+            $contents = null;
+            $publicPath = public_path('storage/' . $path);
+            if (file_exists($publicPath) && is_file($publicPath)) {
+                $contents = @file_get_contents($publicPath);
+            }
+            if ($contents === null && Storage::disk($defaultDisk)->exists($path)) {
+                $contents = Storage::disk($defaultDisk)->get($path);
+            }
+            if ($contents === null && Storage::disk('public')->exists($path)) {
+                $contents = Storage::disk('public')->get($path);
+            }
+            if ($contents === null && file_exists(storage_path('app/public/' . $path))) {
+                $contents = @file_get_contents(storage_path('app/public/' . $path));
+            }
+            if ($contents === null && file_exists(storage_path('app/' . $path))) {
+                $contents = @file_get_contents(storage_path('app/' . $path));
+            }
+            if ($contents === null && $defaultDisk !== 'public') {
+                $rootPath = Storage::disk($defaultDisk)->path($path);
+                if (file_exists($rootPath)) {
+                    $contents = @file_get_contents($rootPath);
+                }
+            }
+
+            if ($contents === null || $contents === false || strlen($contents) === 0) {
+                continue;
+            }
+
             $newFilename = 'property_' . time() . '_' . uniqid() . '.jpg';
             $newRelativePath = 'property_pictures/' . $newFilename;
+            $destPath = $destDir . '/' . $newFilename;
 
-            // Copy image physically
-            Storage::disk('public')->put(
-                $newRelativePath,
-                file_get_contents($oldPath)
-            );
-
-            // Create new DB row for new property
-            $newProperty->pictures()->create([
-                'path' => $newRelativePath,
-            ]);
+            if (File::put($destPath, $contents) !== false) {
+                $newProperty->pictures()->create(['path' => $newRelativePath]);
+            }
         }
 
         DB::commit();
@@ -237,7 +272,7 @@ public function edit($id)
     if ($request->hasFile('regulatory_image')) {
         // Delete old file if exists
         if ($property->regulatory_image) {
-            \Storage::disk('public')->delete($property->regulatory_image);
+            Storage::disk('public')->delete($property->regulatory_image);
         }
         // Store new file and **update path in column**
         $imagePath = $request->file('regulatory_image')->store('regulatory_images', 'public');
@@ -279,7 +314,7 @@ public function edit($id)
         // Save path in DB
         $property->pictures()->create(['path' => $pathForDatabase]);
 
-        \Log::info('Uploaded property image', [
+        Log::info('Uploaded property image', [
             'storage_path' => $storagePath,
             'db_path' => $pathForDatabase
         ]);
@@ -341,8 +376,8 @@ public function edit($id)
 
     // Delete all related images
     foreach ($property->pictures as $picture) {
-        if ($picture->path && \Storage::disk('public')->exists($picture->path)) {
-            \Storage::disk('public')->delete($picture->path);
+        if ($picture->path && Storage::disk('public')->exists($picture->path)) {
+            Storage::disk('public')->delete($picture->path);
         }
         $picture->delete();
     }

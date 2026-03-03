@@ -200,8 +200,11 @@
             <div class="slider">
                 <div class="slides" style="transform: translateX(0%);">
                     @foreach($banners as $banner)
-                    @php $placement = $banner->text_placement ?? 'left'; @endphp
-                    <div class="slidee overlay" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ $banner->image_url ?? '' }}');">
+                    @php
+                        $placement = $banner->text_placement ?? 'left';
+                        $bannerImgUrl = $banner->image_url ?? '';
+                    @endphp
+                    <div class="slidee overlay" data-banner-bg="{{ $bannerImgUrl }}" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));">
                         <div class="content content--{{ $placement }}">
                             @if($banner->sub_heading)<p>{{ $banner->sub_heading }}</p>@endif
                             @if($banner->heading)<h3>{{ $banner->heading }}</h3>@endif
@@ -215,8 +218,8 @@
                     @endforeach
                 </div>
                 @if($banners->count() > 1)
-                <div class="prev"></div>
-                <div class="next"></div>
+                <button type="button" class="banner-arrow banner-prev" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
+                <button type="button" class="banner-arrow banner-next" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
                 @endif
             </div>
             @if($banners->count() > 1)
@@ -261,33 +264,33 @@
 .slidee .img {
     padding: 30px 80px 0 0;
 }
-    /* Navigation arrows */
-
-    .prev, .next {
-    position: absolute;
-    top: 50%;
-    border-radius: 50%;
-    padding: 12px;
-    cursor: pointer;
-    font-size: 20px;
-    color: #000;
-    user-select: none;
-    height: 30px;
-    width: 30px;
-}
-
-.prev {
-    left: 15px;
-    background: url(https://images.pixazo.ai/sitefiles/arrowVector.svg);
-    background-size: cover;
-    transform: rotate(180deg);
-}
-.next {
-    right: 15px;
-    background: url(https://images.pixazo.ai/sitefiles/arrowVector.svg);
-    background-size: cover;
-}
-
+    /* Banner arrows: visible on hover only, hidden at first/last slide */
+    .banner-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transition: opacity 0.25s ease, background 0.2s ease;
+      pointer-events: none;
+    }
+    .slider:hover .banner-arrow { opacity: 1; pointer-events: auto; }
+    .banner-arrow:hover { background: #fff; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); }
+    .banner-arrow.banner-arrow--hidden { display: none !important; }
+    .banner-prev { left: 16px; }
+    .banner-next { right: 16px; }
 
     /* Dots */
     .dots {
@@ -362,34 +365,6 @@
     }
 .content .freecard{display: block; font-size: 11px; line-height: 2;font-weight: bold;}
 
-    /* Navigation arrows */
-
-.prev, .next {
-    position: absolute;
-    top: 50%;
-    border-radius: 50%;
-    padding: 12px;
-    cursor: pointer;
-    font-size: 20px;
-    color: #000;
-    user-select: none;
-    height: 30px;
-    width: 30px;
-}
-
-.prev {
-    left: 15px;
-    background: url(https://images.pixazo.ai/sitefiles/arrowVector.svg);
-    background-size: cover;
-    transform: rotate(180deg);
-}
-.next {
-    right: 15px;
-    background: url(https://images.pixazo.ai/sitefiles/arrowVector.svg);
-    background-size: cover;
-}
-
-
     /* Dots */
     .dots {
       position: absolute;
@@ -426,7 +401,7 @@
       h2 { font-size: 15px; }
       .content { margin-left: 0; }
       .content--right { margin-right: 0; }
-      .prev, .next { display: none; }
+      .banner-arrow { display: none !important; }
       .content { max-width: 250px; z-index: 1;}
       .slidee { height: 200px; position: relative; }
 .slidee .img{  padding: 20px 00px 0 0;}
@@ -450,16 +425,41 @@
 (function() {
   const sliderTrack1 = document.querySelector('.slides');
   const slideItems1 = document.querySelectorAll('.slidee');
-  const buttonPrev1 = document.querySelector('.prev');
-  const buttonNext1 = document.querySelector('.next');
+  const buttonPrev1 = document.querySelector('.banner-prev');
+  const buttonNext1 = document.querySelector('.banner-next');
   const navigationDots1 = document.querySelectorAll('.dot');
 
   if (!slideItems1.length) return;
+
+  // Set banner background images from data attribute (avoids Blade in style for linter)
+  document.querySelectorAll('.slidee[data-banner-bg]').forEach(function(el) {
+    var url = el.getAttribute('data-banner-bg');
+    if (url) {
+      el.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(\'' + url.replace(/'/g, '\\\'') + '\')';
+    }
+  });
 
   let currentIndex1 = 0;
   let dragStartX1 = 0;
   let dragEndX1 = 0;
   let autoSlideTimer;
+
+  function updateBannerArrows() {
+    if (buttonPrev1) {
+      if (currentIndex1 <= 0) {
+        buttonPrev1.classList.add('banner-arrow--hidden');
+      } else {
+        buttonPrev1.classList.remove('banner-arrow--hidden');
+      }
+    }
+    if (buttonNext1) {
+      if (currentIndex1 >= slideItems1.length - 1) {
+        buttonNext1.classList.add('banner-arrow--hidden');
+      } else {
+        buttonNext1.classList.remove('banner-arrow--hidden');
+      }
+    }
+  }
 
   function showSlideAt1(indexToShow1) {
     if (slideItems1.length === 0) return;
@@ -474,10 +474,12 @@
     navigationDots1.forEach(function(dot1, i1) {
       dot1.classList.toggle('active', i1 === currentIndex1);
     });
+    updateBannerArrows();
   }
 
   if (buttonPrev1) buttonPrev1.addEventListener('click', function() { showSlideAt1(currentIndex1 - 1); });
   if (buttonNext1) buttonNext1.addEventListener('click', function() { showSlideAt1(currentIndex1 + 1); });
+  updateBannerArrows();
   navigationDots1.forEach(function(dot1, i1) {
     dot1.addEventListener('click', function() { showSlideAt1(i1); });
   });
@@ -810,44 +812,20 @@
     transition: 0.25s ease;
 }
 
-.toggle-btn.active {
-    background: #26ae61;
-    color: #fff;
-}
-
+/* Hover only when NOT selected – so active state is always visible after click */
 .toggle-btn:hover {
     background: #e9f7f0;
     color: #26ae61;
 }
 
-.buy-dropdown {
-    position: relative;
+.toggle-btn.active,
+.toggle-btn.active:hover,
+.toggle-btn.active:focus {
+    background: #26ae61 !important;
+    color: #fff !important;
+    border-color: #26ae61;
 }
 
-.buy-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    width: 180px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-    overflow: hidden;
-    display: none;
-    z-index: 1000;
-}
-
-.buy-option {
-    padding: 12px 14px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: 0.2s ease;
-}
-
-.buy-option.active {
-    background: #26ae61;
-    color: #fff;
-}
 
 
 </style>
@@ -861,64 +839,42 @@
 
     <div class="search-row">
 
-        <!-- BUY / RENT -->
+        <!-- BUY / RENT / OFF PLAN (plain buttons, same as Rent) -->
 <div class="search-toggle-wrapper">
 
-    <!-- BUY DROPDOWN -->
-    <div class="buy-dropdown">
-        <button type="button"
-                class="toggle-btn {{ request('propertyType','1') == '1' ? 'active' : '' }}"
-                id="buyToggle">
-            Buy
-            <i class="fas fa-chevron-down ms-1"></i>
-        </button>
+    @php
+        $homePropertyType = request('propertyType', '1');
+        $homePropertyType = in_array($homePropertyType, ['1','2','3']) ? $homePropertyType : '1';
+    @endphp
 
-<div class="buy-menu">
-
-    <!-- ALL -->
-    <div class="buy-option {{ request('status') == '' ? 'active' : '' }}"
-         data-status="">
-        All
-    </div>
-
-    <!-- READY (1,2,3) -->
-    <div class="buy-option {{ in_array(request('status'), ['1','2','3']) ? 'active' : '' }}"
-         data-status="ready">
-        Ready
-    </div>
-
-    <!-- OFF PLAN -->
-    <div class="buy-option {{ request('status') == '4' ? 'active' : '' }}"
-         data-status="4">
-        Off-Plan / Under Construction
-    </div>
-
-</div>
-
-<!-- THIS IS WHAT GETS SUBMITTED -->
-<input type="hidden" name="status" id="status"
-       value="{{ request('status') }}">
-
-
-    </div>
+    <!-- BUY BUTTON -->
+    <button type="button"
+            class="toggle-btn {{ $homePropertyType == '1' ? 'active' : '' }}"
+            id="buyToggle"
+            data-property-type="1">
+        Buy
+    </button>
 
     <!-- RENT BUTTON -->
     <button type="button"
-            class="toggle-btn {{ request('propertyType') == '2' ? 'active' : '' }}"
-            id="rentToggle">
+            class="toggle-btn {{ $homePropertyType == '2' ? 'active' : '' }}"
+            id="rentToggle"
+            data-property-type="2">
         Rent
     </button>
 
-    <!-- Hidden inputs -->
-    <input type="hidden"
-           name="propertyType"
-           id="propertyType"
-           value="{{ request('propertyType','1') }}">
+    <!-- OFF PLAN BUTTON -->
+    <button type="button"
+            class="toggle-btn {{ $homePropertyType == '3' ? 'active' : '' }}"
+            id="offPlanToggle"
+            data-property-type="3">
+        Off Plan
+    </button>
 
-    <input type="hidden"
-           name="buy_type"
-           id="buy_type"
-           value="{{ request('buy_type') }}">
+    <!-- Hidden inputs -->
+    <input type="hidden" name="status" id="status" value="">
+    <input type="hidden" name="propertyType" id="propertyType" value="{{ $homePropertyType }}">
+    <input type="hidden" name="buy_type" id="buy_type" value="{{ request('buy_type') }}">
 </div>
 
 
@@ -931,66 +887,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const buyBtn = document.getElementById('buyToggle');
     const rentBtn = document.getElementById('rentToggle');
+    const offPlanBtn = document.getElementById('offPlanToggle');
     const propertyTypeInput = document.getElementById('propertyType');
-    const buyMenu = document.querySelector('.buy-menu');
-    const statusInput = document.getElementById('status');
 
-    if (buyBtn && rentBtn && propertyTypeInput) {
-
-        // BUY CLICK
-        buyBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-
-            buyBtn.classList.add('active');
-            rentBtn.classList.remove('active');
-
-            propertyTypeInput.value = '1'; // BUY
-            buyMenu.style.display = 'block';
+    function setActiveListingType(activeBtn) {
+        [buyBtn, rentBtn, offPlanBtn].forEach(function(btn) {
+            if (btn) btn.classList.remove('active');
         });
-
-        // RENT CLICK
-        rentBtn.addEventListener('click', function () {
-            rentBtn.classList.add('active');
-            buyBtn.classList.remove('active');
-
-            propertyTypeInput.value = '2'; // RENT
-            buyMenu.style.display = 'none';
-
-            // Reset buy-only filters
-            statusInput.value = '';
-        });
+        if (activeBtn) activeBtn.classList.add('active');
     }
 
-    /* ===========================
-       BUY DROPDOWN OPTIONS
-    ============================ */
-
-    document.querySelectorAll('.buy-option').forEach(option => {
-        option.addEventListener('click', function (e) {
+    if (buyBtn && propertyTypeInput) {
+        buyBtn.addEventListener('click', function (e) {
             e.stopPropagation();
-
-            document.querySelectorAll('.buy-option')
-                .forEach(el => el.classList.remove('active'));
-
-            this.classList.add('active');
-
-            // status values:
-            // ""       => All
-            // "ready"  => backend maps to 1,2,3
-            // "4"      => Off-plan
-            statusInput.value = this.dataset.status;
-
-            buyMenu.style.display = 'none';
+            propertyTypeInput.value = '1';
+            setActiveListingType(buyBtn);
         });
-    });
-
-    /* ===========================
-       CLOSE BUY MENU ON OUTSIDE CLICK
-    ============================ */
-
-    document.addEventListener('click', function () {
-        if (buyMenu) buyMenu.style.display = 'none';
-    });
+        if (rentBtn) {
+            rentBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                propertyTypeInput.value = '2';
+                setActiveListingType(rentBtn);
+            });
+        }
+        if (offPlanBtn) {
+            offPlanBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                propertyTypeInput.value = '3';
+                setActiveListingType(offPlanBtn);
+            });
+        }
+    }
 
     /* ===========================
        CUSTOM DROPDOWNS (Property Type / Beds)
@@ -1050,19 +977,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 id="smart-search"
                 name="location"
                 placeholder="City, area or building"
-                autocomplete="off">
+                autocomplete="off"
+                value="{{ request('location', '') }}">
         </div>
 
         <div class="seaarch-pill-outer">
-            <!-- BUDGET MIN -->
+            <!-- BUDGET MIN (0 to any) -->
             <div class="search-pill">
-                <input type="number" name="priceMin" placeholder="Min AED"
+                <input type="number" name="priceMin" placeholder="Min AED" min="0" step="1"
                        value="{{ request('priceMin') }}">
             </div>
-    
-            <!-- BUDGET MAX -->
+
+            <!-- BUDGET MAX (any value, leave empty for no max) -->
             <div class="search-pill">
-                <input type="number" name="priceMax" placeholder="Max AED"
+                <input type="number" name="priceMax" placeholder="Max AED" min="0" step="1"
                        value="{{ request('priceMax') }}">
             </div>
         </div>    
@@ -1492,10 +1420,10 @@ Why Direct Deal -->
     @endphp
 
     @foreach($locations as $location)
+        @php $locImageUrl = asset($location['image']); @endphp
         <div class="col-md-6 mb-4">
             <a href="{{ url('properties') }}?location={{ urlencode($location['name']) }}">
-                <div class="location-item bg-overlay-gradient bg-holder"
-                    style="background-image: url('{{ asset($location['image']) }}');">
+                <div class="location-item bg-overlay-gradient bg-holder" data-loc-bg="{{ $locImageUrl }}">
                     <div class="location-item-info">
                         <h5 class="location-item-title">{{ $location['name'] }}</h5>
                         <span class="location-item-list">{{ $propertyCounts[$location['name']] ?? 0 }} Properties</span>
@@ -1511,7 +1439,16 @@ Why Direct Deal -->
     <!--=================================
         location -->
 
-
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.location-item[data-loc-bg]').forEach(function(el) {
+    var url = el.getAttribute('data-loc-bg');
+    if (url) {
+      el.style.backgroundImage = 'url(\'' + url.replace(/'/g, '\\\'') + '\')';
+    }
+  });
+});
+</script>
 
     <!--=================================
         about-->

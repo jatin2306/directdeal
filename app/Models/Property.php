@@ -150,7 +150,40 @@ class Property extends Model
     public function scopeFilterByPrice($query, $priceMin, $priceMax)
     {
         if ($priceMin !== null && $priceMax !== null) {
-            $query->whereBetween('price', [$priceMin, $priceMax]);
+            $min = (int) $priceMin;
+            $max = (int) $priceMax;
+            if ($min > $max) {
+                [$min, $max] = [$max, $min];
+            }
+            $query->whereBetween('price', [$min, $max]);
+            return $query;
+        }
+        if ($priceMin !== null && $priceMin !== '') {
+            $query->where('price', '>=', (int) $priceMin);
+        }
+        if ($priceMax !== null && $priceMax !== '') {
+            $query->where('price', '<=', (int) $priceMax);
+        }
+        return $query;
+    }
+
+    /** Filter by built area (sqft): min and/or max */
+    public function scopeFilterByArea($query, $areaMin, $areaMax)
+    {
+        if ($areaMin !== null && $areaMin !== '' && $areaMax !== null && $areaMax !== '') {
+            $min = (int) $areaMin;
+            $max = (int) $areaMax;
+            if ($min > $max) {
+                [$min, $max] = [$max, $min];
+            }
+            $query->whereBetween('builtArea', [$min, $max]);
+            return $query;
+        }
+        if ($areaMin !== null && $areaMin !== '') {
+            $query->where('builtArea', '>=', (int) $areaMin);
+        }
+        if ($areaMax !== null && $areaMax !== '') {
+            $query->where('builtArea', '<=', (int) $areaMax);
         }
         return $query;
     }
@@ -177,16 +210,16 @@ class Property extends Model
 
     public function scopeFilterByBedrooms($query, $bedrooms)
     {
-        if ($bedrooms) {
-            return $query->where('bedrooms', $bedrooms);
+        if ($bedrooms !== null && $bedrooms !== '') {
+            return $query->where('bedrooms', (int) $bedrooms);
         }
         return $query;
     }
 
     public function scopeFilterByBathrooms($query, $bathrooms)
     {
-        if ($bathrooms) {
-            return $query->where('bathrooms', $bathrooms);
+        if ($bathrooms !== null && $bathrooms !== '') {
+            return $query->where('bathrooms', (int) $bathrooms);
         }
         return $query;
     }
@@ -288,10 +321,13 @@ class Property extends Model
 
     public function scopeSmartSearch($query, $search)
     {
-        if (!$search) {
+        $search = $search ? trim((string) $search) : null;
+        if ($search === null || $search === '') {
             return $query;
         }
 
+        // Escape LIKE wildcards so user input is matched literally (% and _)
+        $searchEscaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
         $searchLower = strtolower($search);
 
         // Detect "2 bed", "3 bedroom", "studio"
@@ -302,14 +338,16 @@ class Property extends Model
             $bedrooms = 0;
         }
 
-        return $query->where(function ($q) use ($search, $bedrooms) {
+        return $query->where(function ($q) use ($searchEscaped, $bedrooms) {
 
-            // Text-based matching
-            $q->where('propertyName', 'LIKE', "%{$search}%")
-            ->orWhere('address', 'LIKE', "%{$search}%")
-            ->orWhere('city', 'LIKE', "%{$search}%")
-            ->orWhere('sub_area', 'LIKE', "%{$search}%")
-            ->orWhere('description', 'LIKE', "%{$search}%");
+            // Text-based matching (escaped for consistent LIKE behavior)
+            $pattern = '%' . $searchEscaped . '%';
+            $q->where('propertyName', 'LIKE', $pattern)
+                ->orWhere('address', 'LIKE', $pattern)
+                ->orWhere('city', 'LIKE', $pattern)
+                ->orWhere('sub_area', 'LIKE', $pattern)
+                ->orWhere('community', 'LIKE', $pattern)
+                ->orWhere('description', 'LIKE', $pattern);
 
             // Bedrooms matching
             if ($bedrooms !== null) {

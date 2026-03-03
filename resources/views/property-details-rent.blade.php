@@ -135,12 +135,12 @@
                                       color: #26ae61 !important;
                                   }
                               </style>
+                                @php $isFavorited = auth()->check() && $property->isFavoritedBy(auth()->user()); @endphp
                                 <li style="display: inline-block;">
                                   <a href="#" 
                                      onclick="event.preventDefault(); document.getElementById('favorite-form-{{ $property->id }}').submit();" 
                                      style="display: block; align-items: center; color: inherit; text-decoration: none;">
-                                      <i class="{{ auth()->check() && $property->isFavoritedBy(auth()->user()) ? 'fas fa-heart' : 'fas fa-heart' }}" 
-                                         style="color: {{ auth()->check() && $property->isFavoritedBy(auth()->user()) ? '#26ae61' : 'inherit' }};"></i>
+                                      <i class="fas fa-heart{{ $isFavorited ? ' text-success' : '' }}"></i>
                                   </a>
                                   <form id="favorite-form-{{ $property->id }}" action="{{ route('toggleFavorite', $property->id) }}" method="POST" style="display: none;">
                                       @csrf
@@ -301,7 +301,7 @@
                               <div class="d-flex align-items-center">
                                   <div class="text-center me-3">
                                     <i class="fas fa-bed"></i>
-                                      <p class="m-0">{{ $property->bedrooms }}{{ $property->bedrooms > 5 ? '+' : '' }} Bedrooms</p>
+                                      <p class="m-0">{{ $property->bedrooms == 0 ? 'Studio' : $property->bedrooms . ($property->bedrooms > 5 ? '+' : '') . ' Bedrooms' }}</p>
                                   </div>
                                   <div class="text-center me-3">
                                     <i class="fas fa-bath"></i>
@@ -326,7 +326,7 @@
                                           <li><b>Property Name:</b> {{ $property->propertyName }}</li>
                                           <li><b>Price:</b> <span>AED {{ number_format($property->price, 0) }} per/month</span></li>
                                           <li><b>Property Size:</b> {{ $property->plotArea }} Sq Ft</li>
-                                          <li><b>Bedrooms:</b> {{ $property->bedrooms }}{{ $property->bedrooms > 5 ? '+' : '' }}</li>
+                                          <li><b>Bedrooms:</b> {{ $property->bedrooms == 0 ? 'Studio' : $property->bedrooms . ($property->bedrooms > 5 ? '+' : '') }}</li>
                                           <li><b>Bathrooms:</b> {{ $property->bathrooms }}{{ $property->bathrooms > 5 ? '+' : '' }}</li>
                                       </ul>
                                   </div>

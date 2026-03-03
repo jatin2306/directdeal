@@ -31,9 +31,11 @@ class PropertyController extends Controller
 
 
     public function index(Request $request)
-    {   
-        $priceMin = $request->get('priceMin', null); // Default minimum price
-        $priceMax = $request->get('priceMax', null); // Default maximum price
+    {
+        $priceMin = $request->has('priceMin') && $request->get('priceMin') !== '' && is_numeric(str_replace(',', '', $request->get('priceMin')))
+            ? (int) round((float) str_replace(',', '', $request->get('priceMin'))) : null;
+        $priceMax = $request->has('priceMax') && $request->get('priceMax') !== '' && is_numeric(str_replace(',', '', $request->get('priceMax')))
+            ? (int) round((float) str_replace(',', '', $request->get('priceMax'))) : null;
         $propertyType = $request->get('propertyType'); // Sale or Rent
         $category = $request->get('property_category_id'); // Filter for property category
         $childType = $request->get('child_type_id'); // Filter for child type
@@ -41,16 +43,22 @@ class PropertyController extends Controller
         $sortOption = $request->get('sort', ''); // Sort by price or date
         $bedrooms = $request->get('bedrooms', null); // Number of bedrooms
         $bathrooms = $request->get('bathrooms', null); // Number of bathrooms
-        $location = $request->get('location', null); // Location name
-        
-        $status = $request->status;
-        
+        $areaMin = $request->has('areaMin') && $request->get('areaMin') !== '' && is_numeric(str_replace(',', '', $request->get('areaMin')))
+            ? (int) round((float) str_replace(',', '', $request->get('areaMin'))) : null;
+        $areaMax = $request->has('areaMax') && $request->get('areaMax') !== '' && is_numeric(str_replace(',', '', $request->get('areaMax')))
+            ? (int) round((float) str_replace(',', '', $request->get('areaMax'))) : null;
+        $location = $request->filled('location') ? trim((string) $request->get('location')) : null;
+        if ($location === '') {
+            $location = null;
+        }
+
         // Apply query scopes
         $properties = Property::with(['pictures', 'user', 'category', 'childTypeRelation'])
             ->filterByPropertyType($propertyType)
             ->filterByCategory($category)
             ->filterByChildType($childType)
             ->filterByPrice($priceMin, $priceMax)
+            ->filterByArea($areaMin, $areaMax)
             ->filterByStatus($status)
             ->filterByBedrooms($bedrooms) // Scope for bedrooms
             ->filterByBathrooms($bathrooms) // Scope for bathrooms
@@ -78,20 +86,19 @@ class PropertyController extends Controller
             }
 
         $totalProperty = $properties->count(); // Get the total number of properties
-        $properties = $properties->paginate(10); // Paginate results, 10 properties per page
+        $properties = $properties->paginate(10)->withQueryString(); // Keep filters on pagination
         
        
-        // Fetch data for filter options
+        // Fetch data for filter options (verified only; only options with count > 0 for sidebar)
         $propertyTypes = [
             '1' => 'Buy',
             '2' => 'Rent',
             '3' => 'Off Plan',
         ];
-        // Get the count of properties for each type
         $propertyTypeCounts = [
-            'Buy' => Property::filterByPropertyType('1')->count(),
-            'Rent' => Property::filterByPropertyType('2')->count(),
-            'Off Plan' => Property::filterByPropertyType('3')->count(),
+            'Buy' => Property::verified()->filterByPropertyType('1')->count(),
+            'Rent' => Property::verified()->filterByPropertyType('2')->count(),
+            'Off Plan' => Property::verified()->filterByPropertyType('3')->count(),
         ];
         $statuses = [
             '1' => 'Vacant',
@@ -99,20 +106,43 @@ class PropertyController extends Controller
             '3' => 'Rented',
             '4' => 'Off Plan/Under Construction',
         ];
+        $statusCounts = [];
+        foreach (array_keys($statuses) as $key) {
+            $statusCounts[$key] = Property::verified()->where('status', $key)->count();
+        }
         
-        $categories = Category::withCount('properties')->get(); 
-        $childTypes = ChildType::withCount('properties')->get();
+        // Categories: count only verified properties, then keep only those with count > 0
+        $categories = Category::withCount(['properties' => function ($q) {
+            $q->where('verified', true);
+        }])->get()->filter(function ($cat) {
+            return $cat->properties_count > 0;
+        })->values();
+        // Child types: count only verified properties, keep only with count > 0 (avoids duplicates and empty options)
+        $childTypes = ChildType::withCount(['properties' => function ($q) {
+            $q->where('verified', true);
+        }])->get()->filter(function ($ct) {
+            return $ct->properties_count > 0;
+        })->values();
 
         // Map the selected category and child type to their names
         $selectedCategory = $categories->firstWhere('id', $category);
         $selectedChildType = $childTypes->firstWhere('id', $childType);
         
-        // Extract city names from the 'city' column    
-        $locations = Property::distinct()
-        ->pluck('city') // Pluck city names
-        ->merge(Property::distinct()->pluck('sub_area')) // Pluck sub-area names
-        ->unique()
-        ->values();
+        // Distinct locations (city + sub_area), exclude empty and "Not Specified"
+        $locations = Property::verified()
+            ->distinct()
+            ->pluck('city')
+            ->merge(Property::verified()->distinct()->pluck('sub_area'))
+            ->map(function ($name) {
+                return $name ? trim((string) $name) : null;
+            })
+            ->filter(function ($name) {
+                return $name !== null && $name !== '' && strtolower($name) !== 'not specified';
+            })
+            ->unique()
+            ->values()
+            ->sort()
+            ->values();
         
         // Fetch suggested properties if no results are found
         $suggestedProperties = [];
@@ -129,11 +159,12 @@ class PropertyController extends Controller
             'properties' => $properties,
             'totalProperty' => $totalProperty,
             'propertyTypes' => $propertyTypes,
-            'propertyTypeCounts' => $propertyTypeCounts, // Pass property type counts here
+            'propertyTypeCounts' => $propertyTypeCounts,
             'statuses' => $statuses,
+            'statusCounts' => $statusCounts,
             'categories' => $categories,
             'childTypes' => $childTypes,
-            'locations' => $locations, // Pass locations to the view
+            'locations' => $locations,
             'filters' => [
                 'propertyType' => $propertyTypes[$propertyType] ?? null,
                 'property_category_id' => $selectedCategory ? $selectedCategory->name : null,
@@ -230,7 +261,7 @@ public function scopeFilterByStatus($query, $status)
         $data['sub_area'] = $location['sub_area'];
 
         // Set the user_id to the currently authenticated user
-        $data['user_id'] = auth()->id();
+        $data['user_id'] = Auth::id();
         
         // Set needs_photographer based on user selection
         $data['needs_photographer'] = $request->has('needs_photographer');
@@ -341,7 +372,7 @@ public function scopeFilterByStatus($query, $status)
 
         // Check if the user has already reviewed this property
         $review = Review::where('property_id', $id)
-        ->where('user_id', auth()->id())
+        ->where('user_id', Auth::id())
         ->first();
         // Fetch amenities names from the 'amenities' table using the stored amenities array in the property
         $amenities = [];
