@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
+use App\Models\FeaturedSection;
 use App\Models\Property;
 use App\Models\Category;
 use App\Models\ChildType;
@@ -18,8 +19,17 @@ class HomeController extends Controller
     // Fetch featured properties for the homepage without caching
     $featuredProperties = Property::with(['pictures', 'childTypeRelation'])
         ->where('is_featured', true)
-        ->verified() // Optional: remove if you want to include unverified properties
+        ->verified()
         ->take(5)
+        ->get();
+
+    // Admin-configured featured sections (title, heading, placement, multiple properties)
+    $featuredSections = FeaturedSection::where('is_active', true)
+        ->with(['properties' => function ($q) {
+            $q->with(['pictures', 'childTypeRelation']);
+        }])
+        ->orderBy('sort_order')
+        ->orderBy('id')
         ->get();
 
 
@@ -86,6 +96,7 @@ class HomeController extends Controller
     return view('home', [
         'banners' => $banners,
         'featuredProperties' => $featuredProperties,
+        'featuredSections' => $featuredSections,
         'properties' => $properties,
         'location' => $location,
         'propertyCounts' => $propertyCounts,

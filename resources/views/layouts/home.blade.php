@@ -49,6 +49,13 @@
     <link rel="stylesheet" href="{{ asset('css/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/range-slider/ion.rangeSlider.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/owl-carousel/owl.carousel.min.css') }}" />
+    <style>
+    /* Show carousel content if Owl not initialized (fallback) */
+    .owl-carousel:not(.owl-loaded) { display: block !important; overflow: visible; }
+    .owl-carousel:not(.owl-loaded) .item { box-sizing: border-box; display: inline-block; vertical-align: top; width: 33.333%; padding: 0 10px; margin-bottom: 20px; }
+    @media (max-width: 991px) { .owl-carousel:not(.owl-loaded) .item { width: 50%; } }
+    @media (max-width: 575px) { .owl-carousel:not(.owl-loaded) .item { width: 100%; } }
+    </style>
     <link rel="stylesheet" href="{{ asset('css/magnific-popup/magnific-popup.css') }}" />
     <link href="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/css/lightgallery-bundle.min.css" rel="stylesheet">
 
@@ -125,6 +132,18 @@
             z-index: 999;
             /* Ensure header is always above */
         }
+
+        .footer-social-list {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            list-style: none;
+            padding-left: 0;
+        }
+        .footer-social-list li {
+            display: inline-block;
+        }
     </style>
 
 
@@ -132,7 +151,7 @@
     <nav class="navbar navbar-light navbar-static-top navbar-expand-lg header-sticky" style="background-color: #f8f8f8; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div class="container-fluid px-4">
             <!-- Logo and Brand -->
-            <a class="navbar-brand me-5" href="{{ url('') }}" style="min-width: 150px;">
+            <a class="navbar-brand me-5" href="{{ route('home') }}" style="min-width: 150px;">
                 <img class="img-fluid" src="{{ asset('images/logo.jpg') }}" alt="Direct Deal UAE – Buy, Sell & Rent Properties in Dubai" style="height: 40px;">
             </a>
 
@@ -146,7 +165,7 @@
                 <ul class="nav navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link {{ Request::is('/') ? 'active-menu' : '' }}"
-                        href="{{ url('') }}">
+                        href="{{ route('home') }}">
                             {{ translate('Home') }}
                         </a>
                     </li>
@@ -407,9 +426,16 @@ footer-->
                             <li> <b><i class="fas fa-microphone-alt"></i></b><span><a href="tel:+971581144230">+971581144230</a></span> </li>
                             <li> <b><i class="fas fa-headset"></i></b><span><a href="mailto:info@directdealuae.com">info@directdealuae.com</a></span> </li>
                         </ul>
+                        <p class="text-white mb-2 mt-3 small">Follow us:</p>
+                        <ul class="list-unstyled mb-0 d-flex flex-wrap gap-2 footer-social-list">
+                            <li><a href="https://www.facebook.com/share/1GYi1wEoKn/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="text-white" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a></li>
+                            <li><a href="https://x.com/directdealuae" target="_blank" rel="noopener noreferrer" class="text-white" aria-label="X (Twitter)"><i class="fab fa-twitter"></i></a></li>
+                            <li><a href="https://www.linkedin.com/company/direct-deal-llc/" target="_blank" rel="noopener noreferrer" class="text-white" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+                            <li><a href="https://www.instagram.com/directdealuae?igsh=MTh0dW9sdHNzN2kzYg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="text-white" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
+                        </ul>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6">
                 </div> 
                 
@@ -433,7 +459,7 @@ footer-->
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-md-4 text-center text-md-start">
-                        <a href="index-02.html"><img class="img-fluid footer-logo" src="images/logo.jpg"
+                        <a href="{{ route('home') }}"><img class="img-fluid footer-logo" src="{{ asset('images/logo.jpg') }}"
                                 alt=""> </a>
                     </div>
                     <div class="col-md-4 text-center my-3 mt-md-0 mb-md-0">
@@ -474,6 +500,44 @@ Javascript -->
     <script src="{{ asset('js/select2/select2.full.js') }}"></script>
     <script src="{{ asset('js/range-slider/ion.rangeSlider.min.js') }}"></script>
     <script src="{{ asset('js/owl-carousel/owl.carousel.min.js') }}"></script>
+    <script>
+    jQuery(function($) {
+        function initOwlCarousels() {
+            if (!$ || !$.fn.owlCarousel) return;
+            $('.owl-carousel').each(function() {
+                var $el = $(this);
+                if ($el.hasClass('owl-loaded')) return;
+                if ($el.find('.item').length === 0) return;
+                var items = parseInt($el.attr('data-items'), 10) || 3;
+                var mdItems = parseInt($el.attr('data-md-items'), 10) || 2;
+                var smItems = parseInt($el.attr('data-sm-items'), 10) || 1;
+                var xsItems = parseInt($el.attr('data-xs-items'), 10) || 1;
+                var xxItems = parseInt($el.attr('data-xx-items'), 10) || 1;
+                var margin = parseInt($el.attr('data-space'), 10) || 20;
+                var navAttr = $el.attr('data-nav-arrow');
+                var nav = navAttr === 'true' || navAttr === true;
+                try {
+                    $el.owlCarousel({
+                        items: items,
+                        margin: margin,
+                        nav: nav,
+                        dots: false,
+                        loop: true,
+                        responsive: {
+                            0: { items: xxItems || xsItems || 1 },
+                            576: { items: xsItems || 1 },
+                            768: { items: smItems || 2 },
+                            992: { items: mdItems || 3 },
+                            1200: { items: items }
+                        }
+                    });
+                } catch (e) {}
+            });
+        }
+        initOwlCarousels();
+        setTimeout(initOwlCarousels, 300);
+    });
+    </script>
     <script src="{{ asset('js/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
     <script src="{{ asset('js/countdown/jquery.downCount.js') }}"></script>
 
@@ -931,6 +995,7 @@ $(document).ready(function() {
 });
 
 </script>
+  @stack('scripts')
 </body>
 
 </html>

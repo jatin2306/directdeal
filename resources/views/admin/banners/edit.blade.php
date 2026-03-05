@@ -56,14 +56,22 @@
                 </div>
                 <div class="col-12">
                     <label for="image" class="form-label">Image</label>
-                    @if($banner->image)
-                        <div class="mb-2">
-                            <img src="{{ $banner->image_url }}" alt="" class="rounded border" style="max-height: 120px;">
-                        </div>
-                    @endif
                     <input type="file" class="form-control {{ $errors->has('image') ? 'is-invalid' : '' }}" id="image" name="image" accept="image/*">
                     @error('image') <div class="invalid-feedback d-block text-danger">{{ $message }}</div> @enderror
                     <small class="text-muted">Leave empty to keep current. Max 5MB.</small>
+                </div>
+                <div class="col-12" id="banner-preview-wrap" style="display: {{ $banner->image ? 'block' : 'none' }};">
+                    <label class="form-label">Preview &amp; adjust</label>
+                    <p class="text-muted small">Crop by dragging the corners, zoom with buttons, drag image to position left/right.</p>
+                    <div class="border rounded bg-dark position-relative" style="height: 280px; width: 100%;">
+                        <img id="banner-preview-img" src="{{ $banner->image ? $banner->image_url : '' }}" alt="" style="max-width: 100%; max-height: 280px;">
+                    </div>
+                    <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="banner-zoom-out" title="Zoom out">− Zoom out</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="banner-zoom-in" title="Zoom in">+ Zoom in</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="banner-reset" title="Reset">Reset</button>
+                    </div>
+                    <input type="hidden" name="image_display" id="image_display" value="{{ $banner->image_display ? json_encode($banner->image_display) : '' }}">
                 </div>
                 <div class="col-md-4">
                     <label for="sort_order" class="form-label">Sort order</label>
@@ -91,4 +99,107 @@
         </div>
     </form>
 </div>
+
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css">
+<style>
+#banner-preview-wrap .cropper-view-box, #banner-preview-wrap .cropper-face { border-radius: 0; }
+#banner-preview-wrap .cropper-container { height: 280px !important; }
+</style>
+@endpush
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var fileInput = document.getElementById('image');
+    var wrap = document.getElementById('banner-preview-wrap');
+    var previewImg = document.getElementById('banner-preview-img');
+    var hiddenInput = document.getElementById('image_display');
+    var zoomInBtn = document.getElementById('banner-zoom-in');
+    var zoomOutBtn = document.getElementById('banner-zoom-out');
+    var resetBtn = document.getElementById('banner-reset');
+    var cropper = null;
+    var initialDisplay = null;
+    try {
+        var raw = hiddenInput.value;
+        if (raw) initialDisplay = JSON.parse(raw);
+    } catch (e) {}
+
+    function captureAndStore() {
+        if (!cropper) return;
+        var data = cropper.getData();
+        var imgData = cropper.getImageData();
+        if (!imgData.naturalWidth) return;
+        var natW = imgData.naturalWidth, natH = imgData.naturalHeight;
+        var payload = {
+            crop: {
+                x: Math.round((data.x / natW) * 10000) / 100,
+                y: Math.round((data.y / natH) * 10000) / 100,
+                w: Math.round((data.width / natW) * 10000) / 100,
+                h: Math.round((data.height / natH) * 10000) / 100
+            }
+        };
+        hiddenInput.value = JSON.stringify(payload);
+    }
+
+    function initCropper(imgSrc) {
+        if (cropper) { cropper.destroy(); cropper = null; }
+        previewImg.src = imgSrc || previewImg.src;
+        if (!previewImg.src) return;
+        wrap.style.display = 'block';
+        previewImg.onload = function() {
+            cropper = new Cropper(previewImg, {
+                viewMode: 1,
+                dragMode: 'move',
+                aspectRatio: 1920 / 500,
+                autoCropArea: 1,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+                toggleDragModeOnDblclick: false
+            });
+            if (initialDisplay && initialDisplay.crop && imgSrc === undefined) {
+                var c = initialDisplay.crop;
+                var imgData = cropper.getImageData();
+                if (imgData.naturalWidth) {
+                    cropper.setData({
+                        x: (c.x / 100) * imgData.naturalWidth,
+                        y: (c.y / 100) * imgData.naturalHeight,
+                        width: (c.w / 100) * imgData.naturalWidth,
+                        height: (c.h / 100) * imgData.naturalHeight
+                    });
+                }
+                initialDisplay = null;
+            }
+            captureAndStore();
+            cropper.cropper.addEventListener('cropend', captureAndStore);
+        };
+    }
+
+    if (previewImg.src && previewImg.src.indexOf('http') === 0) {
+        initCropper();
+    }
+
+    fileInput.addEventListener('change', function() {
+        var file = this.files[0];
+        if (!file || !file.type.match('image.*')) return;
+        initialDisplay = null;
+        var url = URL.createObjectURL(file);
+        initCropper(url);
+        previewImg.onload = function() { URL.revokeObjectURL(url); };
+    });
+
+    if (zoomInBtn) zoomInBtn.addEventListener('click', function() { if (cropper) cropper.zoom(0.1); captureAndStore(); });
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', function() { if (cropper) cropper.zoom(-0.1); captureAndStore(); });
+    if (resetBtn) resetBtn.addEventListener('click', function() { if (cropper) cropper.reset(); captureAndStore(); });
+
+    document.querySelector('form').addEventListener('submit', function() {
+        captureAndStore();
+    });
+});
+</script>
+@endpush
 @endsection

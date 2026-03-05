@@ -203,8 +203,9 @@
                     @php
                         $placement = $banner->text_placement ?? 'left';
                         $bannerImgUrl = $banner->image_url ?? '';
+                        $bannerDisplayStyle = $banner->image_display_style ?? '';
                     @endphp
-                    <div class="slidee overlay" data-banner-bg="{{ $bannerImgUrl }}" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));">
+                    <div class="slidee overlay" data-banner-bg="{{ $bannerImgUrl }}" data-banner-style="{{ e($bannerDisplayStyle) }}" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));">
                         <div class="content content--{{ $placement }}">
                             @if($banner->sub_heading)<p>{{ $banner->sub_heading }}</p>@endif
                             @if($banner->heading)<h3>{{ $banner->heading }}</h3>@endif
@@ -436,6 +437,13 @@
     var url = el.getAttribute('data-banner-bg');
     if (url) {
       el.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(\'' + url.replace(/'/g, '\\\'') + '\')';
+    }
+    var style = el.getAttribute('data-banner-style');
+    if (style) {
+      style.split(';').forEach(function(part) {
+        var m = part.trim().match(/^\s*([\w-]+)\s*:\s*(.+)$/);
+        if (m) el.style.setProperty(m[1].trim(), m[2].trim());
+      });
     }
   });
 
@@ -1265,6 +1273,67 @@ document.addEventListener('click', () => {
     <!--=================================
         feature -->
 
+    @if(isset($featuredSections) && $featuredSections->isNotEmpty())
+    <!--=================================
+    Admin Featured Sections -->
+    @foreach($featuredSections as $fs)
+    @if($fs->properties->isNotEmpty())
+    <section class="space-pb featured-section-block">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-title mb-4">
+                        <h2 class="mb-0">{{ $fs->title }}</h2>
+                        @if($fs->heading)
+                        <p class="mb-0 mt-2 text-muted {{ $fs->heading_placement === 'center' ? 'text-center' : ($fs->heading_placement === 'right' ? 'text-end' : '') }}">{{ $fs->heading }}</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 position-relative featured-section-swiper-wrap">
+                    <div class="swiper featured-section-swiper">
+                        <div class="swiper-wrapper">
+            @foreach($fs->properties as $property)
+                            <div class="swiper-slide">
+                                <div class="property-item rounded-3 shadow-sm border border-light-subtle overflow-hidden h-100">
+                                    <div class="property-image bg-overlay-gradient-04 position-relative">
+                                        <img class="img-fluid rounded-top"
+                                            style="height: 220px; width: 100%; object-fit: cover;"
+                                            src="{{ $property->pictures->first() ? Storage::url($property->pictures->first()->path) : asset('images/placeholder.jpg') }}"
+                                            alt="{{ $property->propertyName }}">
+                                    </div>
+                                    <div class="property-details p-3 bg-white">
+                                        <h6 class="property-title mb-1 fw-semibold featured-card-title">
+                                            <a href="{{ route('property.show', $property->slug ?? $property->id) }}" class="text-dark text-decoration-none">
+                                                {{ $property->propertyName }}
+                                            </a>
+                                        </h6>
+                                        <p class="property-address text-muted small mb-2 featured-card-address">
+                                            <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+                                            <span>{{ $property->address }}</span>
+                                        </p>
+                                    </div>
+                                    <div class="property-btn">
+                                        <a class="property-link btn btn-primary w-100"
+                                           href="{{ route('property.show', $property->slug ?? $property->id) }}">
+                                           See Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+            @endforeach
+                        </div>
+                        <div class="swiper-pagination featured-section-pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    @endif
+    @endforeach
+    @endif
+
     <!--=================================
 Featured Properties-->
 <section class="space-pb d-none">
@@ -2068,5 +2137,65 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+
+@push('scripts')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<style>
+.featured-section-block .featured-section-swiper-wrap { padding: 0; }
+.featured-section-block .featured-section-swiper { padding: 0 0 48px; position: relative; }
+/* Dots at bottom – green theme */
+.featured-section-block .featured-section-pagination {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    text-align: center; padding-top: 16px;
+}
+.featured-section-block .featured-section-pagination .swiper-pagination-bullet {
+    width: 10px; height: 10px; background: #dee2e6; opacity: 1;
+    transition: background 0.2s, transform 0.2s;
+}
+.featured-section-block .featured-section-pagination .swiper-pagination-bullet-active {
+    background: #26ae61; transform: scale(1.2);
+}
+/* Card title: 2-line ellipsis */
+.featured-section-block .featured-card-title { min-height: 2.8em; }
+.featured-section-block .featured-card-title a {
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; text-overflow: ellipsis; line-height: 1.4;
+}
+/* Location: single line ellipsis so card height stays consistent */
+.featured-section-block .featured-card-address { min-height: 1.5em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.featured-section-block .featured-card-address span { display: inline; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+(function() {
+    function initFeaturedSwipers() {
+        if (typeof Swiper === 'undefined') return;
+        document.querySelectorAll('.featured-section-swiper').forEach(function(el) {
+            if (el.swiper) return;
+            new Swiper(el, {
+                slidesPerView: 1.15,
+                spaceBetween: 20,
+                loop: true,
+                autoplay: { delay: 3000, disableOnInteraction: false },
+                pagination: {
+                    el: el.querySelector('.swiper-pagination'),
+                    clickable: true
+                },
+                breakpoints: {
+                    576: { slidesPerView: 2.2 },
+                    992: { slidesPerView: 3.3 }
+                }
+            });
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFeaturedSwipers);
+    } else {
+        initFeaturedSwipers();
+    }
+    setTimeout(initFeaturedSwipers, 100);
+})();
+</script>
+@endpush
 
 @endsection

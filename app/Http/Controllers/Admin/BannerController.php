@@ -39,6 +39,7 @@ class BannerController extends Controller
             'cta_text'        => 'nullable|string|max:100',
             'cta_url'         => 'nullable|string|max:500',
             'image'           => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'image_display'   => 'nullable|string',
             'text_placement'  => 'nullable|string|in:left,right,center',
             'sort_order'      => 'nullable|integer|min:0',
             'is_active'       => 'nullable|boolean',
@@ -57,6 +58,13 @@ class BannerController extends Controller
             $name = Str::random(40) . '.' . $file->getClientOriginalExtension();
             $file->move($this->bannerStoragePath(), $name);
             $validated['image'] = 'banners/' . $name;
+        }
+
+        if (! empty($validated['image_display'])) {
+            $decoded = json_decode($validated['image_display'], true);
+            $validated['image_display'] = is_array($decoded) ? $decoded : null;
+        } else {
+            $validated['image_display'] = null;
         }
 
         Banner::create($validated);
@@ -79,6 +87,7 @@ class BannerController extends Controller
             'cta_text'        => 'nullable|string|max:100',
             'cta_url'         => 'nullable|string|max:500',
             'image'           => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'image_display'   => 'nullable|string',
             'text_placement'  => 'nullable|string|in:left,right,center',
             'sort_order'      => 'nullable|integer|min:0',
             'is_active'       => 'nullable|boolean',
@@ -105,6 +114,15 @@ class BannerController extends Controller
             $validated['image'] = 'banners/' . $name;
         } else {
             unset($validated['image']);
+        }
+
+        if (array_key_exists('image_display', $validated)) {
+            if (! empty($validated['image_display'])) {
+                $decoded = json_decode($validated['image_display'], true);
+                $validated['image_display'] = is_array($decoded) ? $decoded : null;
+            } else {
+                $validated['image_display'] = null;
+            }
         }
 
         $banner->update($validated);

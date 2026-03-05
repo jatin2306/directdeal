@@ -9,7 +9,7 @@ breadcrumb -->
     <div class="row">
       <div class="col-12">
         <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a href="index-02.html"> <i class="fas fa-home"></i> </a></li>
+          <li class="breadcrumb-item"><a href="{{ route('home') }}"> <i class="fas fa-home"></i> </a></li>
           <li class="breadcrumb-item"> <i class="fas fa-chevron-right"></i> <a href="#">Pages</a></li>
           <li class="breadcrumb-item active"> <i class="fas fa-chevron-right"></i> <span> Contact us </span></li>
         </ol>
@@ -64,13 +64,12 @@ Contact -->
          
           <div class="social-icon-02">
             <div class="d-flex align-items-center">
-              <h6 class="me-3">Social:</h6>
+              <h6 class="me-3">Follow us:</h6>
               <ul class="list-unstyled mb-0 list-inline">
-                <li><a href="#"> <i class="fab fa-facebook-f"></i> </a></li>
-                <li><a href="#"> <i class="fab fa-twitter"></i> </a></li>
-                <li><a href="#"> <i class="fab fa-linkedin"></i> </a></li>
-                <li><a href="#"> <i class="fab fa-pinterest"></i> </a></li>
-                <li><a href="#"> <i class="fab fa-instagram"></i> </a></li>
+                <li class="list-inline-item"><a href="https://www.facebook.com/share/1GYi1wEoKn/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a></li>
+                <li class="list-inline-item"><a href="https://x.com/directdealuae" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)"><i class="fab fa-twitter"></i></a></li>
+                <li class="list-inline-item"><a href="https://www.linkedin.com/company/direct-deal-llc/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+                <li class="list-inline-item"><a href="https://www.instagram.com/directdealuae?igsh=MTh0dW9sdHNzN2kzYg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
               </ul>
             </div>
           </div>

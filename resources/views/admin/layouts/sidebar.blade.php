@@ -25,6 +25,12 @@
       </li>
 
       <li class="nav-item mb-2">
+        <a class="nav-link text-white {{ request()->routeIs('admin.featured-sections.*') ? 'active bg-primary' : '' }}" href="{{ route('admin.featured-sections.index') }}">
+          <i class="fa fa-star me-2"></i> Add Carousels
+        </a>
+      </li>
+
+      <li class="nav-item mb-2">
         <a class="nav-link text-white {{ request()->routeIs('admin.amenities.index') ? 'active bg-primary' : '' }}" href="{{ route('admin.amenities.index') }}">
             <i class="fa fa-cogs me-2"></i> Amenities
         </a>
