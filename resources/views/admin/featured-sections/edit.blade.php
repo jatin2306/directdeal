@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.featured-sections.update', $section) }}" method="POST" class="card shadow-sm">
+    <form action="{{ url('admin/featured-sections/' . $section->id) }}" method="POST" class="card shadow-sm">
         @csrf
         @method('PUT')
         <div class="card-body">
@@ -73,21 +73,33 @@
                     <small class="text-muted">Only approved (verified) properties. Order in the list below = display order in the carousel.</small>
                 </div>
                 @php
-                    $orderedIds = array_map('intval', old('property_ids', $section->properties->pluck('id')->values()->toArray()));
-                    $allProps = $section->properties->keyBy('id')->merge($availableProperties->keyBy('id'));
+                    $hasOldProperties = old('property_ids') && count((array) old('property_ids')) > 0;
+                    if ($hasOldProperties) {
+                        $orderedIds = array_map('intval', (array) old('property_ids'));
+                        $allPropsForOld = $availableProperties->keyBy('id')->merge($section->properties->keyBy('id'));
+                    }
                 @endphp
                 <div class="col-12">
                     <label class="form-label">Properties in this carousel <span class="text-danger">*</span> <small class="text-muted">(drag to set display order)</small></label>
                     <ul id="property_order_list" class="list-group list-group-numbered {{ $errors->has('property_ids') ? 'border border-danger' : '' }}" style="min-height: 60px;">
-                        @foreach($orderedIds as $pid)
-                            @php $p = $allProps->get($pid); @endphp
-                            @if($p)
+                        @if($hasOldProperties)
+                            @foreach($orderedIds as $pid)
+                                @php $p = $allPropsForOld->get($pid); @endphp
+                                @if($p)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ $p->id }}" data-name="{{ e($p->propertyName) }}" data-price="{{ number_format($p->price) }}">
+                                        <span>{{ $p->propertyName }} — {{ number_format($p->price) }} AED</span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-property">Remove</button>
+                                    </li>
+                                @endif
+                            @endforeach
+                        @else
+                            @foreach($section->properties as $p)
                                 <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ $p->id }}" data-name="{{ e($p->propertyName) }}" data-price="{{ number_format($p->price) }}">
                                     <span>{{ $p->propertyName }} — {{ number_format($p->price) }} AED</span>
                                     <button type="button" class="btn btn-sm btn-outline-danger remove-property">Remove</button>
                                 </li>
-                            @endif
-                        @endforeach
+                            @endforeach
+                        @endif
                     </ul>
                     <div id="property_ids_hidden_container"></div>
                     @error('property_ids') <div class="invalid-feedback d-block text-danger">{{ $message }}</div> @enderror

@@ -418,7 +418,7 @@ footer-->
                 <div class="col-lg-3 col-md-6">
                     <div class="footer-contact-info">
                         <h5 class="text-primary mb-4">Direct Deal | ORN 43954</h5>
-                        <p class="text-white mb-2 small">Verified Properties for Sale & Rent in Dubai</p>
+                        <p class="text-white mb-2 small">Verified Properties for Sale & Rent in UAE</p>
                         <p class="text-white mb-4">Direct Deal helped thousands of clients to find the right property
                             for their needs.</p>
                         <ul class="list-unstyled mb-0">

@@ -1,6 +1,6 @@
 @extends('layouts.home')
 
-@section('title', 'Verified Properties for Sale & Rent in Dubai | Direct Deal UAE')
+@section('title', 'Verified Properties for Sale & Rent in UAE | Direct Deal UAE')
 @section('meta_description', 'Search verified properties for sale and rent in Dubai. Apartments, villas, townhouses. Lowest brokerage, RERA-licensed. Filter by price, location, bedrooms.')
 
 @section('content')
@@ -465,16 +465,22 @@
                                         var current = getFormSnapshot(form);
                                         filterBtn.disabled = (current === initialSnapshot);
                                     }
+
                                     form.querySelectorAll('select, input').forEach(function(el) {
                                         el.addEventListener('change', checkFilterDirty);
                                         el.addEventListener('input', checkFilterDirty);
                                     });
+
+                                    $(form).on('change', 'select, input', checkFilterDirty);
                                     if (form.querySelector('#location')) {
-                                        var loc = form.querySelector('#location');
-                                        if (loc.classList && loc.classList.contains('select2-hidden-accessible')) {
-                                            $(form).on('change', '#location', checkFilterDirty);
-                                        }
+                                        $(form).on('change', '#location', checkFilterDirty);
                                     }
+
+                                    setTimeout(function() {
+                                        initialSnapshot = getFormSnapshot(form);
+                                        checkFilterDirty();
+                                    }, 200);
+
                                     checkFilterDirty();
                                 });
                             })();

@@ -95,17 +95,17 @@ class FeaturedSectionController extends Controller
         return redirect()->route('admin.featured-sections.index')->with('success', 'Carousel created.');
     }
 
-    public function edit(FeaturedSection $featured_section)
+    public function edit($id)
     {
-        $section = $featured_section->load('properties');
+        $section = FeaturedSection::with('properties')->findOrFail($id);
         $availableProperties = $this->getAvailableProperties($section->id);
-        $selectedIds = $section->properties->pluck('id')->map(fn ($id) => (int) $id)->values()->toArray();
+        $selectedIds = $section->properties->pluck('id')->map(fn ($pid) => (int) $pid)->values()->toArray();
         return view('admin.featured-sections.edit', compact('section', 'availableProperties', 'selectedIds'));
     }
 
-    public function update(Request $request, FeaturedSection $featured_section)
+    public function update(Request $request, $id)
     {
-        $section = $featured_section;
+        $section = FeaturedSection::findOrFail($id);
 
         $validated = $request->validate([
             'title'              => 'required|string|max:255',
@@ -147,9 +147,10 @@ class FeaturedSectionController extends Controller
         return redirect()->route('admin.featured-sections.index')->with('success', 'Carousel updated.');
     }
 
-    public function destroy(FeaturedSection $featured_section)
+    public function destroy($id)
     {
-        $featured_section->delete();
+        $section = FeaturedSection::findOrFail($id);
+        $section->delete();
         return redirect()->route('admin.featured-sections.index')->with('success', 'Carousel deleted.');
     }
 }

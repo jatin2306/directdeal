@@ -67,6 +67,10 @@ class BannerController extends Controller
             $validated['image_display'] = null;
         }
 
+        if (! empty($validated['cta_url'])) {
+            $validated['cta_url'] = html_entity_decode($validated['cta_url'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
         Banner::create($validated);
         return redirect()->route('admin.banners.index')->with('success', 'Banner added.');
     }
@@ -123,6 +127,10 @@ class BannerController extends Controller
             } else {
                 $validated['image_display'] = null;
             }
+        }
+
+        if (! empty($validated['cta_url'])) {
+            $validated['cta_url'] = html_entity_decode($validated['cta_url'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
         }
 
         $banner->update($validated);

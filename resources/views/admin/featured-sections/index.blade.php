@@ -48,8 +48,8 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('admin.featured-sections.edit', $section) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                <form action="{{ route('admin.featured-sections.destroy', $section) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this carousel?');">
+                                <a href="{{ url('admin/featured-sections/' . $section->id . '/edit') }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <form action="{{ url('admin/featured-sections/' . $section->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this carousel?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
