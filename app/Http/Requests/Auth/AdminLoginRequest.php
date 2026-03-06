@@ -50,7 +50,8 @@ class AdminLoginRequest extends FormRequest
         }
 
         $admin = Auth::guard('admin')->user();
-        if ($admin && ! $admin->is_active) {
+        // Protected super admin can always log in (cannot be locked out by deactivation)
+        if ($admin && ! $admin->is_active && ! is_protected_admin_email($admin->email)) {
             Auth::guard('admin')->logout();
             $this->session()->invalidate();
             $this->session()->regenerateToken();

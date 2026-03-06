@@ -53,7 +53,7 @@ class Admin extends Authenticatable
 
    public function canAccess(string $permission): bool
    {
-       if ($this->is_super_admin) {
+       if ($this->is_super_admin || is_protected_admin_email($this->email)) {
            return true;
        }
        $permissions = $this->permissions ?? [];

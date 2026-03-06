@@ -12,6 +12,22 @@ use Illuminate\View\View;
 class LoginController extends Controller
 {
     /**
+     * Default landing routes for admins without dashboard permission (same order as sidebar).
+     */
+    protected static array $landingRoutePermissionMap = [
+        'admin.dashboard' => 'dashboard.view',
+        'admin.property-list' => 'properties.view',
+        'admin.banners.index' => 'banners.view',
+        'admin.featured-sections.index' => 'carousels.view',
+        'admin.amenities.index' => 'amenities.view',
+        'admin.transactions.index' => 'transactions.view',
+        'admin.users.index' => 'users.view',
+        'admin.notifications' => 'notifications.view',
+        'admin.admin-users.index' => 'admin-users.view',
+        'admin.user-listings.index' => 'user-listings.view',
+    ];
+
+    /**
      * Display the login view.
      */
     public function create(): View
@@ -28,7 +44,28 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.dashboard', absolute: false));
+        return redirect()->to($this->defaultAdminRedirectUrl());
+    }
+
+    /**
+     * Get the URL to redirect to after login. If admin has dashboard permission, use dashboard;
+     * otherwise redirect to the first page they have view permission for.
+     */
+    protected function defaultAdminRedirectUrl(): string
+    {
+        /** @var \App\Models\Admin|null $admin */
+        $admin = Auth::guard('admin')->user();
+        if (! $admin) {
+            return route('admin.dashboard', absolute: false);
+        }
+
+        foreach (self::$landingRoutePermissionMap as $routeName => $permission) {
+            if ($admin->canAccess($permission)) {
+                return route($routeName, [], absolute: false);
+            }
+        }
+
+        return route('admin.dashboard', absolute: false);
     }
 
     /**

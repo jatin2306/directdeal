@@ -69,7 +69,7 @@ class EnsureAdminPermission
 
         /** @var \App\Models\Admin $admin */
         $admin = Auth::guard('admin')->user();
-        if ($admin->is_super_admin) {
+        if ($admin->is_super_admin || is_protected_admin_email($admin->email)) {
             return $next($request);
         }
 
