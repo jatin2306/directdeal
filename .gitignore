@@ -20,3 +20,4 @@ vendor
 .env.test
 .env.testing
 .env.staging
+.env

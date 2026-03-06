@@ -66,6 +66,7 @@
 
                 {{-- ACTIONS --}}
                 @if($listing->status === 'pending')
+                    @if(admin_can('user-listings.approve'))
                     <form method="POST" action="{{ route('admin.user-listings.approve', $listing) }}">
                         @csrf
 
@@ -79,8 +80,9 @@
 
                         <button class="btn btn-success btn-sm">Approve</button>
                     </form>
+                    @endif
 
-
+                    @if(admin_can('user-listings.reject'))
                     <form method="POST"
                           action="{{ route('admin.user-listings.reject', $listing) }}"
                           class="mt-2">
@@ -89,6 +91,7 @@
                             Reject
                         </button>
                     </form>
+                    @endif
                 @else
                     <span class="badge bg-info">
                         {{ ucfirst($listing->status) }}

@@ -45,6 +45,16 @@ class BannerController extends Controller
             'is_active'       => 'nullable|boolean',
         ]);
 
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $dimensions = @getimagesize($file->getPathname());
+            if (! $dimensions || $dimensions[0] !== 1280 || $dimensions[1] !== 400) {
+                return redirect()->back()
+                    ->withErrors(['image' => 'The banner image must be exactly 1280 × 400 pixels.'])
+                    ->withInput();
+            }
+        }
+
         $validated['sort_order'] = (int) ($request->input('sort_order', 0));
         $validated['text_placement'] = $request->input('text_placement', 'left');
         $validated['is_active'] = $request->boolean('is_active', true);

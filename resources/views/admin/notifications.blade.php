@@ -28,7 +28,11 @@
                     <td>{{ $index + 1 }}</td>
                     <td>
                         @if($user)
-                            <a href="{{ route('admin.users.edit', $user->id) }}">{{ $user->name }}</a>
+                            @if(admin_can('users.edit'))
+                                <a href="{{ route('admin.users.edit', $user->id) }}">{{ $user->name }}</a>
+                            @else
+                                {{ $user->name }}
+                            @endif
                             <br>
                             <small>{{ $user->email }}</small>
                         @else
@@ -42,9 +46,13 @@
                     </td>
                     <td>
                         @if($propertyId)
-                            <a href="{{ route('admin.properties.edit', $propertyId) }}">
+                            @if(admin_can('properties.edit'))
+                                <a href="{{ route('admin.properties.edit', $propertyId) }}">
+                                    {{ $propertyTitle }} (ID: {{ $propertyId }})
+                                </a>
+                            @else
                                 {{ $propertyTitle }} (ID: {{ $propertyId }})
-                            </a>
+                            @endif
                         @else
                             &mdash;
                         @endif

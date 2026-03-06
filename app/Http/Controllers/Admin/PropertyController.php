@@ -38,6 +38,7 @@ public function duplicate($id)
         // Reset listing-related fields only
         $newProperty->verified = 0;
         $newProperty->is_featured = 0;
+        $newProperty->created_by_admin_id = Auth::guard('admin')->id();
 
         // Rename property
         $newProperty->propertyName = $property->propertyName . ' (Copy)';

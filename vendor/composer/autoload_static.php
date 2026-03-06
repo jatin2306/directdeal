@@ -39,6 +39,7 @@ class ComposerStaticInit626b9e7ddd47fb7eff9aaa53cce0c9ad
         'a1cfe24d14977df6878b9bf804af2d1c' => __DIR__ . '/..' . '/nunomaduro/collision/src/Adapters/Phpunit/Autoload.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         '70b5ceba3ac5cc59b3ea3c5e5e93ba20' => __DIR__ . '/../..' . '/app/Helpers/translate.php',
+        '661e22ab65b8983d36717494d6851e0e' => __DIR__ . '/../..' . '/app/Helpers/admin.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -535,10 +536,13 @@ class ComposerStaticInit626b9e7ddd47fb7eff9aaa53cce0c9ad
     );
 
     public static $classMap = array (
+        'App\\Http\\Controllers\\Admin\\AdminUserController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/AdminUserController.php',
         'App\\Http\\Controllers\\Admin\\AmenityController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/AmenityController.php',
         'App\\Http\\Controllers\\Admin\\Auth\\LoginController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Auth/LoginController.php',
         'App\\Http\\Controllers\\Admin\\Auth\\RegisteredUserController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/Auth/RegisteredUserController.php',
+        'App\\Http\\Controllers\\Admin\\BannerController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/BannerController.php',
         'App\\Http\\Controllers\\Admin\\DashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/DashboardController.php',
+        'App\\Http\\Controllers\\Admin\\FeaturedSectionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/FeaturedSectionController.php',
         'App\\Http\\Controllers\\Admin\\PropertyController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/PropertyController.php',
         'App\\Http\\Controllers\\Admin\\TransactionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/TransactionController.php',
         'App\\Http\\Controllers\\Admin\\UserController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/UserController.php',
@@ -560,15 +564,18 @@ class ComposerStaticInit626b9e7ddd47fb7eff9aaa53cce0c9ad
         'App\\Http\\Controllers\\PropertyController' => __DIR__ . '/../..' . '/app/Http/Controllers/PropertyController.php',
         'App\\Http\\Controllers\\ReviewController' => __DIR__ . '/../..' . '/app/Http/Controllers/ReviewController.php',
         'App\\Http\\Controllers\\UserListingController' => __DIR__ . '/../..' . '/app/Http/Controllers/UserListingController.php',
+        'App\\Http\\Middleware\\EnsureAdminPermission' => __DIR__ . '/../..' . '/app/Http/Middleware/EnsureAdminPermission.php',
         'App\\Http\\Middleware\\SetLocale' => __DIR__ . '/../..' . '/app/Http/Middleware/SetLocale.php',
         'App\\Http\\Requests\\Auth\\AdminLoginRequest' => __DIR__ . '/../..' . '/app/Http/Requests/Auth/AdminLoginRequest.php',
         'App\\Http\\Requests\\Auth\\LoginRequest' => __DIR__ . '/../..' . '/app/Http/Requests/Auth/LoginRequest.php',
         'App\\Http\\Requests\\ProfileUpdateRequest' => __DIR__ . '/../..' . '/app/Http/Requests/ProfileUpdateRequest.php',
         'App\\Models\\Admin' => __DIR__ . '/../..' . '/app/Models/Admin.php',
         'App\\Models\\Amenity' => __DIR__ . '/../..' . '/app/Models/Amenity.php',
+        'App\\Models\\Banner' => __DIR__ . '/../..' . '/app/Models/Banner.php',
         'App\\Models\\Category' => __DIR__ . '/../..' . '/app/Models/Category.php',
         'App\\Models\\ChildType' => __DIR__ . '/../..' . '/app/Models/ChildType.php',
         'App\\Models\\Favorite' => __DIR__ . '/../..' . '/app/Models/Favorite.php',
+        'App\\Models\\FeaturedSection' => __DIR__ . '/../..' . '/app/Models/FeaturedSection.php',
         'App\\Models\\Property' => __DIR__ . '/../..' . '/app/Models/Property.php',
         'App\\Models\\PropertyPicture' => __DIR__ . '/../..' . '/app/Models/PropertyPicture.php',
         'App\\Models\\Review' => __DIR__ . '/../..' . '/app/Models/Review.php',
@@ -579,6 +586,7 @@ class ComposerStaticInit626b9e7ddd47fb7eff9aaa53cce0c9ad
         'App\\Notifications\\PriceDropNotification' => __DIR__ . '/../..' . '/app/Notifications/PriceDropNotification.php',
         'App\\Observers\\PropertyObserver' => __DIR__ . '/../..' . '/app/Observers/PropertyObserver.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
+        'App\\Support\\AdminPermission' => __DIR__ . '/../..' . '/app/Support/AdminPermission.php',
         'App\\View\\Components\\AppLayout' => __DIR__ . '/../..' . '/app/View/Components/AppLayout.php',
         'App\\View\\Components\\GuestLayout' => __DIR__ . '/../..' . '/app/View/Components/GuestLayout.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',

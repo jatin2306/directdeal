@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PropertyController;
 use App\Http\Controllers\Admin\UserListingController;
 
-Route::prefix('admin')->middleware('auth:admin')->group(function () {
+Route::prefix('admin')->middleware(['auth:admin', 'admin.permission'])->group(function () {
 
     Route::get('user-listings', [UserListingController::class, 'index'])
         ->name('admin.user-listings.index');
@@ -41,9 +41,11 @@ Route::prefix('admin')->middleware('guest:admin')->group(function () {
 });
 
 Route::prefix('admin')->middleware('auth:admin')->group(function () {
-
     Route::post('logout', [LoginController::class, 'destroy'])
         ->name('admin.logout');
+});
+
+Route::prefix('admin')->middleware(['auth:admin', 'admin.permission'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/property-list', [PropertyController::class, 'index'])->name('admin.property-list');
@@ -69,4 +71,7 @@ Route::prefix('admin')->middleware('auth:admin')->group(function () {
     Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class)->names('admin.banners')->except(['show']);
 
     Route::resource('featured-sections', \App\Http\Controllers\Admin\FeaturedSectionController::class)->names('admin.featured-sections')->except(['show']);
+
+    Route::resource('admin-users', \App\Http\Controllers\Admin\AdminUserController::class)->names('admin.admin-users')->except(['show']);
+    Route::put('admin-users/{id}/toggle-active', [\App\Http\Controllers\Admin\AdminUserController::class, 'toggleActive'])->name('admin.admin-users.toggleActive');
 });

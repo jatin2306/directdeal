@@ -1,3 +1,4 @@
+@php $showPropertyActions = admin_can('properties.verify') || admin_can('properties.edit') || admin_can('properties.create') || admin_can('properties.delete'); @endphp
 <div class="card shadow-sm border-0">
   <div class="card-body table-responsive">
     <table class="table table-hover align-middle mb-0">
@@ -9,7 +10,7 @@
           <th>Status</th>
           <th>Price</th>
           <th>Posted By</th>
-          <th>Actions</th>
+          @if($showPropertyActions)<th>Actions</th>@endif
         </tr>
       </thead>
       <tbody>
@@ -26,6 +27,7 @@
             </td>
             <td>{{ $propertyTypes[$property->propertyType] ?? 'N/A' }}</td>
             <td>
+              @if(admin_can('properties.verify'))
               <form method="POST" action="{{ route('admin.properties.toggleVerified', $property->id) }}">
                 @csrf
                 @method('PUT')
@@ -33,26 +35,37 @@
                   {{ $property->verified ? 'Verified' : 'Not Verified' }}
                 </button>
               </form>
+              @else
+              <span class="badge {{ $property->verified ? 'bg-success' : 'bg-secondary' }}">{{ $property->verified ? 'Verified' : 'Not Verified' }}</span>
+              @endif
             </td>
             <td>₹{{ number_format($property->price) }}</td>
             <td>{{ $property->user->name ?? 'N/A' }}</td>
+            @if($showPropertyActions)
             <td>
               <a href="{{ route('property.show', $property->slug ?? $property->id) }}" class="btn btn-sm px-2 btn-outline-info" target="_blank"><i class="fa fa-eye"></i></a>
+              @if(admin_can('properties.edit') || (admin_can('properties.create') && $property->created_by_admin_id == Auth::guard('admin')->id()))
               <a href="{{ route('admin.properties.edit', $property->id) }}" class="btn btn-sm px-2 btn-outline-warning"><i class="fa fa-edit"></i></a>
+              @endif
+              @if(admin_can('properties.create'))
               <form action="{{ route('admin.properties.duplicate', $property->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Duplicate this property?')">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-outline-secondary px-2"><i class="fa fa-copy"></i></button>
               </form>
+              @endif
+              @if(admin_can('properties.delete'))
               <form action="{{ route('admin.properties.destroy', $property->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this property?')">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-sm btn-outline-danger px-2"><i class="fa fa-trash"></i></button>
               </form>
+              @endif
             </td>
+            @endif
           </tr>
         @empty
           <tr>
-            <td colspan="7" class="text-center text-muted py-4">No properties found.</td>
+            <td colspan="{{ $showPropertyActions ? 7 : 6 }}" class="text-center text-muted py-4">No properties found.</td>
           </tr>
         @endforelse
       </tbody>

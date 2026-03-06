@@ -38,4 +38,5 @@ return array(
     'a1cfe24d14977df6878b9bf804af2d1c' => $vendorDir . '/nunomaduro/collision/src/Adapters/Phpunit/Autoload.php',
     'ec07570ca5a812141189b1fa81503674' => $vendorDir . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
     '70b5ceba3ac5cc59b3ea3c5e5e93ba20' => $baseDir . '/app/Helpers/translate.php',
+    '661e22ab65b8983d36717494d6851e0e' => $baseDir . '/app/Helpers/admin.php',
 );

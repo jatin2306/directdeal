@@ -2,10 +2,13 @@
 @section('title', 'Transactions')
 
 @section('content')
+@php $showTransactionActions = admin_can('transactions.edit') || admin_can('transactions.delete'); @endphp
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">Transactions</h4>
+        @if(admin_can('transactions.create'))
         <a href="{{ route('admin.transactions.create') }}" class="btn btn-primary">Add Transaction</a>
+        @endif
     </div>
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -25,7 +28,7 @@
                     <th>Status</th>
                     <th>Note</th>
                     <th>Date</th>
-                    <th>Actions</th>
+                    @if($showTransactionActions)<th>Actions</th>@endif
                 </tr>
             </thead>
             <tbody>
@@ -51,16 +54,22 @@
                         <td>
                             {{ $transaction->transaction_date ? \Carbon\Carbon::parse($transaction->transaction_date)->format('d M Y, h:i a') : '-' }}
                         </td>
+                        @if($showTransactionActions)
                         <td>
+                            @if(admin_can('transactions.edit'))
                             <a href="{{ route('admin.transactions.edit', $transaction->id) }}" class="btn btn-sm btn-info">Edit</a>
+                            @endif
+                            @if(admin_can('transactions.delete'))
                             <form action="{{ route('admin.transactions.destroy', $transaction->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this transaction?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-danger">Delete</button>
                             </form>
+                            @endif
                         </td>
+                        @endif
                     </tr>
                 @empty
-                    <tr><td colspan="9">No transactions found.</td></tr>
+                    <tr><td colspan="{{ $showTransactionActions ? 9 : 8 }}">No transactions found.</td></tr>
                 @endforelse
             </tbody>
         </table>

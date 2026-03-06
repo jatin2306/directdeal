@@ -20,6 +20,9 @@ class Admin extends Authenticatable
        'name',
        'email',
        'password',
+       'is_super_admin',
+       'permissions',
+       'is_active',
    ];
 
    /**
@@ -42,6 +45,18 @@ class Admin extends Authenticatable
        return [
            'email_verified_at' => 'datetime',
            'password' => 'hashed',
+           'is_super_admin' => 'boolean',
+           'permissions' => 'array',
+           'is_active' => 'boolean',
        ];
+   }
+
+   public function canAccess(string $permission): bool
+   {
+       if ($this->is_super_admin) {
+           return true;
+       }
+       $permissions = $this->permissions ?? [];
+       return is_array($permissions) && in_array($permission, $permissions, true);
    }
 }

@@ -49,6 +49,16 @@ class AdminLoginRequest extends FormRequest
             ]);
         }
 
+        $admin = Auth::guard('admin')->user();
+        if ($admin && ! $admin->is_active) {
+            Auth::guard('admin')->logout();
+            $this->session()->invalidate();
+            $this->session()->regenerateToken();
+            throw ValidationException::withMessages([
+                'email' => 'This account has been deactivated. Please contact an administrator.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

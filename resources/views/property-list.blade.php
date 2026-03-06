@@ -600,10 +600,14 @@
                         </h2>
                     </div>
 
-                    <!-- Sorting Dropdown -->
+                    <!-- Sorting Dropdown (preserve all current filters from homepage/listing) -->
                     <div>
                         <form class="d-flex align-items-center" method="GET" action="{{ route('property.index') }}">
-                            @csrf
+                            @foreach (request()->only(['propertyType', 'property_category_id', 'child_type_id', 'status', 'bedrooms', 'bathrooms', 'location', 'priceMin', 'priceMax', 'areaMin', 'areaMax']) as $key => $val)
+                                @if ($val !== null && $val !== '')
+                                    <input type="hidden" name="{{ $key }}" value="{{ $val }}">
+                                @endif
+                            @endforeach
                             <select class="form-select" id="sort" name="sort" onchange="this.form.submit()" style="min-width: 180px;">
                                 <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Sort By</option>
                                 <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>

@@ -64,6 +64,24 @@ label {
   font-weight: normal;
 }
 
+/* All forms: labels dark, placeholders grey */
+form .form-label,
+form label {
+  color: #212529;
+}
+.form-control::placeholder {
+  color: #6c757d;
+}
+.form-control::-webkit-input-placeholder {
+  color: #6c757d;
+}
+.form-control::-moz-placeholder {
+  color: #6c757d;
+}
+.form-control::-ms-input-placeholder {
+  color: #6c757d;
+}
+
 h1 {
   font-size: 42px;
   font-style: normal;
@@ -149,15 +167,15 @@ input.form-control {
 }
 
 .form-control::-moz-placeholder {
-  color: #3a4957;
+  color: #6c757d;
 }
 
 .form-control::-ms-input-placeholder {
-  color: #3a4957;
+  color: #6c757d;
 }
 
 .form-control::-webkit-input-placeholder {
-  color: #3a4957;
+  color: #6c757d;
 }
 
 .custom-file {

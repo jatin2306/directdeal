@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class, // Ensures $errors work
             \App\Http\Middleware\SetLocale::class, // Your locale middleware
         ]);
+        $middleware->alias([
+            'admin.permission' => \App\Http\Middleware\EnsureAdminPermission::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -3,10 +3,13 @@
 @section('title', 'Banners')
 
 @section('content')
+@php $showBannerActions = admin_can('banners.edit') || admin_can('banners.delete'); @endphp
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">Homepage Banners</h4>
+        @if(admin_can('banners.create'))
         <a href="{{ route('admin.banners.create') }}" class="btn btn-primary"><i class="fa fa-plus me-1"></i> Add Banner</a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -29,7 +32,7 @@
                         <th>Placement</th>
                         <th>Order</th>
                         <th>Active</th>
-                        <th>Actions</th>
+                        @if($showBannerActions)<th>Actions</th>@endif
                     </tr>
                 </thead>
                 <tbody>
@@ -61,18 +64,24 @@
                                     <span class="badge bg-secondary">No</span>
                                 @endif
                             </td>
+                            @if($showBannerActions)
                             <td>
+                                @if(admin_can('banners.edit'))
                                 <a href="{{ url('admin/banners/' . $banner->id . '/edit') }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                @endif
+                                @if(admin_can('banners.delete'))
                                 <form action="{{ url('admin/banners/' . $banner->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this banner?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                 </form>
+                                @endif
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center text-muted py-4">No banners yet. <a href="{{ route('admin.banners.create') }}">Add one</a>.</td>
+                            <td colspan="{{ $showBannerActions ? 9 : 8 }}" class="text-center text-muted py-4">No banners yet.@if(admin_can('banners.create')) <a href="{{ route('admin.banners.create') }}">Add one</a>@endif</td>
                         </tr>
                     @endforelse
                 </tbody>
