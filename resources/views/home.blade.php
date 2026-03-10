@@ -1,7 +1,7 @@
 @extends('layouts.home')
 
-@section('title', 'Direct Deal UAE – Buy, Sell & Rent Verified Properties in Dubai | Lowest Brokerage')
-@section('meta_description', 'Buy, sell and rent verified properties in Dubai. Lowest brokerage fees, RERA-licensed, 100% verified listings. No fake ads. Search apartments, villas, townhouses.')
+@section('title', 'Verified Properties in Dubai | Buy, Sell & Rent | Direct Deal UAE')
+@section('meta_description', 'Buy, sell or rent verified Dubai properties with the lowest brokerage fees. 0% commission for owners and 0.2% for buyers on Direct Deal UAE.')
 @section('meta_keywords', 'buy property Dubai, rent Dubai, sell property Dubai, verified listings UAE, RERA Dubai, lowest brokerage, apartments for sale Dubai, villas for rent')
 
 @section('content')

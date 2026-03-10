@@ -472,6 +472,7 @@ footer-->
                                     document.getElementById('copyright').appendChild(document.createTextNode(new Date().getFullYear()))
                                 </script>
                             </span> <a href="#"> Direct Deal </a> All Rights Reserved </p>
+                        <p class="mb-0 mt-1 text-white">Developed by <a href="https://brandinglift.com" target="_blank" rel="noopener noreferrer" class="text-primary fw-semibold text-decoration-underline">Branding Lift</a></p>
                     </div>
                 </div>
             </div>

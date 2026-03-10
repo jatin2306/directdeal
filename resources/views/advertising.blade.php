@@ -1,6 +1,9 @@
 
 @extends('layouts.home')
 
+@section('title', 'Real Estate Advertising Plans | List Properties Online | Direct Deal UAE')
+@section('meta_description', 'Promote your property listings across hundreds of real estate websites with flexible advertising plans from Direct Deal UAE.')
+
 @section('content')
 <!--=================================
 breadcrumb -->

@@ -1,6 +1,9 @@
 
 @extends('layouts.home')
 
+@section('title', 'Real Estate Services in Dubai | Property Buying, Selling & Renting')
+@section('meta_description', 'Explore professional real estate services in Dubai including property sales, rentals, investment support and verified property listings.')
+
 @section('content')
 <!--=================================
 breadcrumb -->

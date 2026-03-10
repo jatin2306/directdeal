@@ -1,40 +1,51 @@
 @extends('layouts.home')
 
-@section('title', 'Verified Properties for Sale & Rent in UAE | Direct Deal UAE')
-@section('meta_description', 'Search verified properties for sale and rent in Dubai. Apartments, villas, townhouses. Lowest brokerage, RERA-licensed. Filter by price, location, bedrooms.')
+@section('title', 'Dubai Properties for Sale & Rent | Verified Listings | Direct Deal UAE')
+@section('meta_description', 'Browse verified properties for sale and rent in Dubai including apartments, villas and investment opportunities with transparent brokerage fees.')
 
 @section('content')
 
-<!-- Dynamic breadcrumb -->
-<div class="bg-light">
+<!-- Listing section: one top line (Properties + Filter + Sort by), then sidebar + listings -->
+<section class="space-ptb" style="padding: 20px 0 24px 0;">
     <div class="container">
-        <div class="row">
+        <!-- One line at top: Properties (breadcrumb) + Filter label on left, Sort by on right -->
+        <div class="row listing-top-bar align-items-center mb-3">
             <div class="col-12">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('home') }}"> <i class="fas fa-home"></i> </a></li>
-                    @foreach (Request::segments() as $segment)
-                    <li class="breadcrumb-item">
-                        <i class="fas fa-chevron-right"></i>
-                        @if ($loop->last)
-                        <span>{{ ucfirst($segment) }}</span>
-                        @else
-                        <a
-                            href="{{ url(implode('/', array_slice(Request::segments(), 0, $loop->index + 1))) }}">
-                            {{ ucfirst($segment) }}
-                        </a>
-                        @endif
-                    </li>
-                    @endforeach
-                </ol>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <ol class="breadcrumb mb-0 py-2">
+                            <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="fas fa-home"></i></a></li>
+                            @foreach (Request::segments() as $segment)
+                            <li class="breadcrumb-item">
+                                <i class="fas fa-chevron-right"></i>
+                                @if ($loop->last)
+                                <span>{{ ucfirst($segment) }}</span>
+                                @else
+                                <a href="{{ url(implode('/', array_slice(Request::segments(), 0, $loop->index + 1))) }}">{{ ucfirst($segment) }}</a>
+                                @endif
+                            </li>
+                            @endforeach
+                        </ol>
+                  
+                    </div>
+                    <form class="d-flex align-items-center" method="GET" action="{{ route('property.index') }}">
+                        @foreach (request()->only(['propertyType', 'property_category_id', 'child_type_id', 'status', 'bedrooms', 'bathrooms', 'location', 'priceMin', 'priceMax', 'areaMin', 'areaMax']) as $key => $val)
+                            @if ($val !== null && $val !== '')
+                                <input type="hidden" name="{{ $key }}" value="{{ $val }}">
+                            @endif
+                        @endforeach
+              
+                        <select class="form-select form-select-sm" id="sort" name="sort" onchange="this.form.submit()" style="min-width: 160px;">
+                            <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Sort By</option>
+                            <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>
+                            <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Price: High to Low</option>
+                            <option value="date_asc" {{ request('sort') == 'date_asc' ? 'selected' : '' }}>Old to New</option>
+                            <option value="date_desc" {{ request('sort') == 'date_desc' ? 'selected' : '' }}>New to Old</option>
+                        </select>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-<!--=================================
-                    breadcrumb -->
-
-<!--=================================
-                    Listing – grid view -->
 <style>
     /* Apply directly to the .irs-single element */
     .irs-single {
@@ -188,6 +199,16 @@
 
             .property-filter {
                 padding: 4px;
+            }
+
+            /* Top bar: Properties + Filter + Sort by in one line */
+            .listing-top-bar {
+                padding: 12px 0;
+                border-bottom: 1px solid #e2ede6;
+            }
+            .listing-top-bar .breadcrumb {
+                background: transparent;
+                padding: 0;
             }
         </style>
         <style>
@@ -592,34 +613,6 @@
 
 
             <div class="col-lg-9">
-                <div class="property-filter d-flex flex-wrap align-items-center justify-content-between">
-                    <!-- Total Results -->
-                    <div class="d-flex align-items-center">
-                        <h2 class="mb-0 me-3" style="font-size: 24px;">
-                            <span class="text-primary">{{ $totalProperty }}</span> Results
-                        </h2>
-                    </div>
-
-                    <!-- Sorting Dropdown (preserve all current filters from homepage/listing) -->
-                    <div>
-                        <form class="d-flex align-items-center" method="GET" action="{{ route('property.index') }}">
-                            @foreach (request()->only(['propertyType', 'property_category_id', 'child_type_id', 'status', 'bedrooms', 'bathrooms', 'location', 'priceMin', 'priceMax', 'areaMin', 'areaMax']) as $key => $val)
-                                @if ($val !== null && $val !== '')
-                                    <input type="hidden" name="{{ $key }}" value="{{ $val }}">
-                                @endif
-                            @endforeach
-                            <select class="form-select" id="sort" name="sort" onchange="this.form.submit()" style="min-width: 180px;">
-                                <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Sort By</option>
-                                <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>
-                                <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Price: High to Low</option>
-                                <option value="date_asc" {{ request('sort') == 'date_asc' ? 'selected' : '' }}>Old to New</option>
-                                <option value="date_desc" {{ request('sort') == 'date_desc' ? 'selected' : '' }}>New to Old</option>
-                            </select>
-                        </form>
-                    </div>
-                </div>
-
-
 
                 @if ($properties->isEmpty())
                 <!--=================================
@@ -770,7 +763,7 @@
                 @endif
                 @else
                 @foreach ($properties as $property)
-                <div class="property-item property-col-list mt-4" data-href="{{ route('property.show', $property->slug ?? $property->id) }}">
+                <div class="property-item property-col-list mt-1" data-href="{{ route('property.show', $property->slug ?? $property->id) }}">
 
                     <div class="row g-0">
                         <div class="col-lg-4 col-md-5" style="cursor: pointer;">

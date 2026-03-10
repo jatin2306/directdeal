@@ -1,6 +1,9 @@
 
 @extends('layouts.home')
 
+@section('title', 'Create Account | Direct Deal UAE Property Platform')
+@section('meta_description', 'Sign up on Direct Deal UAE to list properties, connect with verified buyers and explore Dubai real estate investment opportunities.')
+
 @section('content')
 
 <!--=================================

@@ -8,9 +8,35 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
+            @if (session('success'))
+                <div id="edit-page-alert" class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Please fix the following errors:</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
             <div class="card">
-                <div class="card-header">
-                    <h4>Edit Property</h4>
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h4 class="mb-0">Edit Property</h4>
+                    <a href="{{ route('admin.property-list') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to list
+                    </a>
                 </div>
                 <div class="card-body">
                 <form method="POST" action="{{ route('admin.properties.update', $property->id) }}" enctype="multipart/form-data">
@@ -427,6 +453,12 @@
     }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7PU198Ir_uLOzaOK6hete5Rm5gDmWawI&libraries=places&callback=initMap" async defer></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var el = document.getElementById('edit-page-alert');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+</script>
 
 
 

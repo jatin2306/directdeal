@@ -1,6 +1,9 @@
 
 @extends('layouts.home')
 
+@section('title', 'Contact Direct Deal UAE | Dubai Real Estate Experts')
+@section('meta_description', 'Get in touch with Direct Deal UAE for property buying, selling or renting assistance. Speak with Dubai real estate experts today.')
+
 @section('content')
 <!--=================================
 breadcrumb -->

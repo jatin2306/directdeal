@@ -1,7 +1,7 @@
 @extends('layouts.home')
 
-@section('title', 'About Direct Deal UAE – RERA-Licensed Real Estate | Lowest Brokerage Dubai')
-@section('meta_description', 'About Direct Deal UAE: RERA-licensed brokerage in Dubai. Lowest brokerage fees, verified listings, 0% commission for sellers. Transparent property transactions.')
+@section('title', 'About Direct Deal UAE | RERA Licensed Real Estate Brokerage Dubai')
+@section('meta_description', 'Learn about Direct Deal UAE – a RERA-licensed real estate brokerage offering verified listings, transparent pricing and the lowest brokerage fees in Dubai.')
 
 @section('content')
 

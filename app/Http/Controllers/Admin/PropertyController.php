@@ -291,39 +291,37 @@ public function edit($id)
 
     // Handle new image uploads if any
     if ($request->hasFile('pictures')) {
-    foreach ($request->file('pictures') as $picture) {
-        $manager = new ImageManager(new Driver());
-        $image = $manager->read($picture)->resize(800, 800);
-
-        $tempDirectory = storage_path('app/temp');
-        if (!file_exists($tempDirectory)) {
-            mkdir($tempDirectory, 0777, true);
+        $destDir = public_path('storage/property_pictures');
+        if (! File::isDirectory($destDir)) {
+            File::makeDirectory($destDir, 0755, true);
         }
 
-        $tempPath = tempnam($tempDirectory, 'property_');
-        $image->save($tempPath);
+        foreach ($request->file('pictures') as $picture) {
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($picture)->resize(800, 800);
 
-        $uniqueId = uniqid();
-        $filename = 'property_' . time() . '_' . $uniqueId . '.jpg';
-        $storagePath = 'property_pictures/' . $filename;
-        Storage::put($storagePath, file_get_contents($tempPath));
-        unlink($tempPath);
+            $tempDirectory = storage_path('app/temp');
+            if (! file_exists($tempDirectory)) {
+                mkdir($tempDirectory, 0777, true);
+            }
 
-        // Path to store in DB
-        $pathForDatabase = 'property_pictures/' . $filename;
+            $tempPath = tempnam($tempDirectory, 'property_');
+            $image->save($tempPath);
 
-        // Save path in DB
-        $property->pictures()->create(['path' => $pathForDatabase]);
+            $uniqueId = uniqid();
+            $filename = 'property_' . time() . '_' . $uniqueId . '.jpg';
+            $pathForDatabase = 'property_pictures/' . $filename;
+            $destPath = $destDir . '/' . $filename;
 
-        Log::info('Uploaded property image', [
-            'storage_path' => $storagePath,
-            'db_path' => $pathForDatabase
-        ]);
+            if (File::put($destPath, file_get_contents($tempPath)) !== false) {
+                $property->pictures()->create(['path' => $pathForDatabase]);
+            }
+            @unlink($tempPath);
+        }
     }
-}
 
 
-    return redirect()->route('admin.property-list')->with('success', 'Property updated successfully.');
+    return redirect()->route('admin.properties.edit', $property->id)->with('success', 'Property updated successfully.');
 }
 
 // public function update(Request $request, $property)
